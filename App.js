@@ -81,7 +81,6 @@ export default function App() {
 
   // 검색 관련 상태
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
 
   // 게시판 관련 상태
   const [selectedBoardPost, setSelectedBoardPost] = useState(null);
@@ -232,23 +231,25 @@ export default function App() {
 
   const handleSearch = (text) => {
     setSearchQuery(text);
-    if (text.trim() === '') {
-      setSearchResults([]);
-      return;
-    }
-    const results = posts.filter(p => 
-      p.title.toLowerCase().includes(text.toLowerCase()) || 
-      (p.content && p.content.toLowerCase().includes(text.toLowerCase())) ||
-      (p.description && p.description.toLowerCase().includes(text.toLowerCase()))
-    );
-    setSearchResults(results);
   };
 
-  const handleSearchResultPress = (post) => {
-    setSearchQuery('');
-    setSearchResults([]);
-    handleMarkerPress(post);
-  };
+  const filteredPosts = posts.filter(p => {
+    const keyword = searchQuery.trim().toLowerCase();
+    if (!keyword) return true;
+    return (
+      p.title.toLowerCase().includes(keyword) ||
+      (p.content && p.content.toLowerCase().includes(keyword)) ||
+      (p.description && p.description.toLowerCase().includes(keyword))
+    );
+  });
+
+  const selectedPostIndexInFiltered = selectedPost
+    ? filteredPosts.findIndex(p => p.id === selectedPost.id)
+    : 0;
+
+  const safeInitialIndex = selectedPostIndexInFiltered >= 0 ? selectedPostIndexInFiltered : 0;
+
+  const viewablePosts = filteredPosts;
 
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
 
@@ -350,22 +351,6 @@ export default function App() {
         />
       </View>
 
-      {searchResults.length > 0 && (
-        <View style={styles.searchResultsContainer}>
-          <FlatList
-            data={searchResults}
-            keyExtractor={item => item.id}
-            keyboardShouldPersistTaps="handled"
-            renderItem={({ item }) => (
-              <TouchableOpacity style={styles.searchResultItem} onPress={() => handleSearchResultPress(item)}>
-                <Text style={styles.searchResultTitle}>{item.emoji} {item.title}</Text>
-                <Text style={styles.searchResultType}>{item.type === 'board' ? '스테이션' : '스팟'}</Text>
-              </TouchableOpacity>
-            )}
-          />
-        </View>
-      )}
-
       <MapView
         ref={mapRef}
         style={styles.map}
@@ -392,7 +377,7 @@ export default function App() {
             pinColor="blue"
           />
         )}
-        {posts.map(post => (
+        {filteredPosts.map(post => (
           <CustomMarker
             key={post.id}
             post={post}
@@ -517,18 +502,23 @@ export default function App() {
           style={styles.modalContainer}
         >
           <FlatList
-            data={posts}
+            data={viewablePosts}
             keyExtractor={item => item.id}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            initialScrollIndex={selectedPost ? posts.findIndex(p => p.id === selectedPost.id) : 0}
+            initialScrollIndex={safeInitialIndex}
             getItemLayout={(data, index) => ({ length: screenWidth, offset: screenWidth * index, index })}
             onViewableItemsChanged={onViewableItemsChanged}
             viewabilityConfig={viewabilityConfig}
             renderItem={({ item }) => (
               <View style={{ width: screenWidth, justifyContent: 'center', alignItems: 'center' }}>
                 <View style={[styles.viewModalContent, { maxHeight: '80%', width: '85%' }]}>
+                  <View style={styles.swipeHintContainer}>
+                    <Ionicons name="swap-horizontal" size={14} color="#8b8b8b" />
+                    <Text style={styles.swipeHintText}>스와이프</Text>
+                  </View>
+
                   {item.type === 'post' ? (
                     <>
                       <ScrollView showsVerticalScrollIndicator={false}>
@@ -821,36 +811,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
   },
-  searchResultsContainer: {
-    position: 'absolute',
-    top: 108,
-    width: '90%',
-    maxHeight: 220,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    zIndex: 20,
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
-  },
-  searchResultItem: {
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f3f5',
-  },
-  searchResultTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#222',
-  },
-  searchResultType: {
-    marginTop: 2,
-    fontSize: 12,
-    color: '#6c757d',
-  },
   map: { ...StyleSheet.absoluteFillObject },
   markerContainer: {
     backgroundColor: 'transparent',
@@ -1066,6 +1026,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  swipeHintContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  swipeHintText: {
+    fontSize: 12,
+    color: '#8b8b8b',
+    fontWeight: '600',
+    marginLeft: 4,
   },
   viewModalHeader: {
     flexDirection: 'row',

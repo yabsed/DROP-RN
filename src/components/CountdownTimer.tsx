@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Text } from 'react-native';
-import { styles } from '../styles/globalStyles';
+import React, { useEffect, useState } from "react";
+import { Text } from "react-native";
+import { styles } from "../styles/globalStyles";
 
-export const CountdownTimer = ({ createdAt }) => {
-  const [timeLeft, setTimeLeft] = useState('');
+type Props = {
+  createdAt: number;
+};
+
+export const CountdownTimer = ({ createdAt }: Props) => {
+  const [timeLeft, setTimeLeft] = useState("");
 
   useEffect(() => {
     const updateTimer = () => {
@@ -14,13 +18,14 @@ export const CountdownTimer = ({ createdAt }) => {
 
       const minutes = Math.floor(remaining / 60000);
       const seconds = Math.floor((remaining % 60000) / 1000);
-      setTimeLeft(`${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
+      setTimeLeft(`${minutes}:${seconds < 10 ? "0" : ""}${seconds}`);
     };
 
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
+
     return () => clearInterval(interval);
   }, [createdAt]);
 
-  return <Text style={styles.timerText}>⏳ {timeLeft} 후 리셋</Text>;
+  return <Text style={styles.timerText}>남은 시간 {timeLeft}</Text>;
 };

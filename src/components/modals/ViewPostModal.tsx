@@ -8,10 +8,12 @@ import {
   Modal,
   Platform,
   ScrollView,
+  StyleProp,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  ViewStyle,
   ViewToken,
   ViewabilityConfig,
 } from "react-native";
@@ -19,7 +21,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { CountdownTimer } from "../CountdownTimer";
 import { styles } from "../../styles/globalStyles";
 import { useMapStore } from "../../store/useMapStore";
-import { Post } from "../../types/map";
+import { BoardPost, Post } from "../../types/map";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -29,6 +31,8 @@ type Props = {
   onViewableItemsChanged: (info: { viewableItems: Array<ViewToken<Post>> }) => void;
   viewabilityConfig: ViewabilityConfig;
 };
+
+type DetailPost = Pick<BoardPost, "id" | "emoji" | "title" | "content" | "photo" | "createdAt" | "comments">;
 
 export const ViewPostModal = ({
   viewablePosts,
@@ -66,6 +70,81 @@ export const ViewPostModal = ({
     });
   };
 
+  const renderDetailPost = ({
+    detailPost,
+    useCountdown,
+    scrollRef,
+    scrollStyle,
+    onSubmitComment,
+  }: {
+    detailPost: DetailPost;
+    useCountdown: boolean;
+    scrollRef: React.RefObject<ScrollView | null>;
+    scrollStyle?: StyleProp<ViewStyle>;
+    onSubmitComment: () => void;
+  }) => (
+    <>
+      <ScrollView
+        ref={scrollRef}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="always"
+        onContentSizeChange={scrollToLatestComment}
+        style={scrollStyle}
+      >
+        <View style={styles.viewModalHeader}>
+          <Text style={styles.viewModalEmoji}>{detailPost.emoji || "📝"}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.viewModalTitle}>{detailPost.title}</Text>
+            {useCountdown ? (
+              <CountdownTimer createdAt={detailPost.createdAt} />
+            ) : (
+              <Text style={styles.timerText}>{new Date(detailPost.createdAt).toLocaleString()}</Text>
+            )}
+          </View>
+        </View>
+
+        {detailPost.photo && <Image source={{ uri: detailPost.photo }} style={styles.viewModalImage} resizeMode="cover" />}
+
+        <Text style={styles.viewModalDescription}>{detailPost.content}</Text>
+
+        <View style={styles.commentsSection}>
+          <Text style={styles.commentsTitle}>댓글</Text>
+          {detailPost.comments.map((comment) => (
+            <View key={comment.id} style={styles.commentItem}>
+              <Text style={styles.commentText}>{comment.text}</Text>
+              <Text style={styles.commentTime}>{comment.createdAt}</Text>
+            </View>
+          ))}
+          {detailPost.comments.length === 0 && <Text style={styles.noCommentsText}>아직 댓글이 없습니다.</Text>}
+        </View>
+      </ScrollView>
+
+      <View style={styles.commentInputContainer}>
+        <TextInput
+          style={styles.commentInput}
+          placeholder="댓글을 입력하세요"
+          placeholderTextColor="#8b8b8b"
+          value={newComment}
+          onChangeText={setNewComment}
+        />
+        <TouchableOpacity
+          style={styles.commentSubmitButton}
+          onPress={() => {
+            if (!newComment.trim()) {
+              Keyboard.dismiss();
+              return;
+            }
+            setShouldScrollToLatestComment(true);
+            Keyboard.dismiss();
+            onSubmitComment();
+          }}
+        >
+          <Ionicons name="send" size={16} color="white" />
+        </TouchableOpacity>
+      </View>
+    </>
+  );
+
   return (
     <Modal animationType="fade" transparent visible={viewModalVisible} onRequestClose={handleBackNavigation}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.modalContainer}>
@@ -97,124 +176,24 @@ export const ViewPostModal = ({
                 </View>
 
                 {item.type === "post" ? (
-                  <>
-                    <ScrollView
-                      ref={postDetailScrollRef}
-                      showsVerticalScrollIndicator={false}
-                      keyboardShouldPersistTaps="always"
-                      onContentSizeChange={scrollToLatestComment}
-                      style={{ flexShrink: 1 }}
-                    >
-                      <View style={styles.viewModalHeader}>
-                        <Text style={styles.viewModalEmoji}>{item.emoji}</Text>
-                        <View style={{ flex: 1 }}>
-                          <Text style={styles.viewModalTitle}>{item.title}</Text>
-                          <CountdownTimer createdAt={item.createdAt} />
-                        </View>
-                      </View>
-
-                      {item.photo && <Image source={{ uri: item.photo }} style={styles.viewModalImage} resizeMode="cover" />}
-
-                      <Text style={styles.viewModalDescription}>{item.content}</Text>
-
-                      <View style={styles.commentsSection}>
-                        <Text style={styles.commentsTitle}>댓글</Text>
-                        {item.comments.map((comment) => (
-                          <View key={comment.id} style={styles.commentItem}>
-                            <Text style={styles.commentText}>{comment.text}</Text>
-                            <Text style={styles.commentTime}>{comment.createdAt}</Text>
-                          </View>
-                        ))}
-                        {item.comments.length === 0 && <Text style={styles.noCommentsText}>아직 댓글이 없습니다.</Text>}
-                      </View>
-                    </ScrollView>
-
-                    <View style={styles.commentInputContainer}>
-                      <TextInput
-                        style={styles.commentInput}
-                        placeholder="댓글을 입력하세요"
-                        placeholderTextColor="#8b8b8b"
-                        value={newComment}
-                        onChangeText={setNewComment}
-                      />
-                      <TouchableOpacity
-                        style={styles.commentSubmitButton}
-                        onPress={() => {
-                          if (!newComment.trim()) {
-                            Keyboard.dismiss();
-                            return;
-                          }
-                          setShouldScrollToLatestComment(true);
-                          Keyboard.dismiss();
-                          handleAddComment(item.id);
-                        }}
-                      >
-                        <Ionicons name="send" size={16} color="white" />
-                      </TouchableOpacity>
-                    </View>
-                  </>
+                  renderDetailPost({
+                    detailPost: item,
+                    useCountdown: true,
+                    scrollRef: postDetailScrollRef,
+                    scrollStyle: { flexShrink: 1 },
+                    onSubmitComment: () => handleAddComment(item.id),
+                  })
                 ) : (
                   <>
                     {selectedBoardPost && selectedBoardPostBoardId === item.id ? (
                       <View style={styles.inlineBoardPostContainer}>
-                        <ScrollView
-                          ref={boardPostDetailScrollRef}
-                          showsVerticalScrollIndicator={false}
-                          keyboardShouldPersistTaps="always"
-                          onContentSizeChange={scrollToLatestComment}
-                          style={{ maxHeight: 260, flexShrink: 1 }}
-                        >
-                          <View style={styles.viewModalHeader}>
-                            <Text style={styles.viewModalEmoji}>{selectedBoardPost.emoji || "📝"}</Text>
-                            <View style={{ flex: 1 }}>
-                              <Text style={styles.viewModalTitle}>{selectedBoardPost.title}</Text>
-                              <Text style={styles.timerText}>{new Date(selectedBoardPost.createdAt).toLocaleString()}</Text>
-                            </View>
-                          </View>
-
-                          {selectedBoardPost.photo && (
-                            <Image source={{ uri: selectedBoardPost.photo }} style={styles.viewModalImage} resizeMode="cover" />
-                          )}
-
-                          <Text style={styles.viewModalDescription}>{selectedBoardPost.content}</Text>
-
-                          <View style={styles.commentsSection}>
-                            <Text style={styles.commentsTitle}>댓글</Text>
-                            {selectedBoardPost.comments.map((comment) => (
-                              <View key={comment.id} style={styles.commentItem}>
-                                <Text style={styles.commentText}>{comment.text}</Text>
-                                <Text style={styles.commentTime}>{comment.createdAt}</Text>
-                              </View>
-                            ))}
-                            {selectedBoardPost.comments.length === 0 && (
-                              <Text style={styles.noCommentsText}>아직 댓글이 없습니다.</Text>
-                            )}
-                          </View>
-                        </ScrollView>
-
-                        <View style={styles.commentInputContainer}>
-                          <TextInput
-                            style={styles.commentInput}
-                            placeholder="댓글을 입력하세요"
-                            placeholderTextColor="#8b8b8b"
-                            value={newComment}
-                            onChangeText={setNewComment}
-                          />
-                          <TouchableOpacity
-                            style={styles.commentSubmitButton}
-                            onPress={() => {
-                              if (!newComment.trim()) {
-                                Keyboard.dismiss();
-                                return;
-                              }
-                              setShouldScrollToLatestComment(true);
-                              Keyboard.dismiss();
-                              handleAddBoardPostComment(item.id, selectedBoardPost.id);
-                            }}
-                          >
-                            <Ionicons name="send" size={16} color="white" />
-                          </TouchableOpacity>
-                        </View>
+                        {renderDetailPost({
+                          detailPost: selectedBoardPost,
+                          useCountdown: false,
+                          scrollRef: boardPostDetailScrollRef,
+                          scrollStyle: { maxHeight: 260, flexShrink: 1 },
+                          onSubmitComment: () => handleAddBoardPostComment(item.id, selectedBoardPost.id),
+                        })}
                       </View>
                     ) : (
                       <>
@@ -277,7 +256,6 @@ export const ViewPostModal = ({
                     )}
                   </>
                 )}
-
               </View>
             </View>
           )}

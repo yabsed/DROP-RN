@@ -63,6 +63,12 @@ const CountdownTimer = ({ createdAt }) => {
 };
 
 const screenWidth = Dimensions.get('window').width;
+const INITIAL_REGION = {
+  latitude: 37.471,
+  longitude: 126.935,
+  latitudeDelta: 0.02,
+  longitudeDelta: 0.02,
+};
 
 export default function App() {
   const [myLocation, setMyLocation] = useState(null);
@@ -91,6 +97,7 @@ export default function App() {
   const socketRef = useRef(null);
   const locationSubscription = useRef(null);
   const mapRef = useRef(null);
+  const mapRegionRef = useRef(INITIAL_REGION);
 
   useEffect(() => {
     // 소켓 연결
@@ -208,11 +215,12 @@ export default function App() {
   const handleMarkerPress = (post) => {
     setSelectedPost(post);
     setViewModalVisible(true);
+    const { latitudeDelta, longitudeDelta } = mapRegionRef.current;
     mapRef.current?.animateToRegion({
       latitude: post.coordinate.latitude,
       longitude: post.coordinate.longitude,
-      latitudeDelta: 0.02,
-      longitudeDelta: 0.02,
+      latitudeDelta,
+      longitudeDelta,
     }, 500);
   };
 
@@ -220,11 +228,12 @@ export default function App() {
     if (viewableItems.length > 0) {
       const item = viewableItems[0].item;
       setSelectedPost(item);
+      const { latitudeDelta, longitudeDelta } = mapRegionRef.current;
       mapRef.current?.animateToRegion({
         latitude: item.coordinate.latitude,
         longitude: item.coordinate.longitude,
-        latitudeDelta: 0.02,
-        longitudeDelta: 0.02,
+        latitudeDelta,
+        longitudeDelta,
       }, 500);
     }
   }).current;
@@ -354,14 +363,12 @@ export default function App() {
       <MapView
         ref={mapRef}
         style={styles.map}
-        initialRegion={{
-          latitude: 37.471,
-          longitude: 126.935,
-          latitudeDelta: 0.02,
-          longitudeDelta: 0.02,
-        }}
+        initialRegion={INITIAL_REGION}
         showsUserLocation={true}
         onPress={handleMapPress}
+        onRegionChangeComplete={(region) => {
+          mapRegionRef.current = region;
+        }}
         customMapStyle={customMapStyle}
       >
         {myLocation && (

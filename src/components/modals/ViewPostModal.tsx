@@ -40,9 +40,8 @@ export const ViewPostModal = ({
   onViewableItemsChanged,
   viewabilityConfig,
 }: Props) => {
-  const postDetailScrollRef = React.useRef<ScrollView>(null);
-  const boardPostDetailScrollRef = React.useRef<ScrollView>(null);
-  const [shouldScrollToLatestComment, setShouldScrollToLatestComment] = React.useState(false);
+  const detailScrollRefs = React.useRef<Record<string, ScrollView | null>>({});
+  const [pendingScrollKey, setPendingScrollKey] = React.useState<string | null>(null);
 
   const {
     viewModalVisible,
@@ -60,35 +59,48 @@ export const ViewPostModal = ({
     handleBackNavigation,
   } = useMapStore();
 
-  const scrollToLatestComment = () => {
-    if (!shouldScrollToLatestComment) return;
+  const registerDetailScrollRef = React.useCallback(
+    (scrollKey: string) => (node: ScrollView | null) => {
+      if (node) {
+        detailScrollRefs.current[scrollKey] = node;
+        return;
+      }
+      delete detailScrollRefs.current[scrollKey];
+    },
+    [],
+  );
 
-    requestAnimationFrame(() => {
-      postDetailScrollRef.current?.scrollToEnd({ animated: true });
-      boardPostDetailScrollRef.current?.scrollToEnd({ animated: true });
-      setShouldScrollToLatestComment(false);
-    });
-  };
+  const handleDetailContentSizeChange = React.useCallback(
+    (scrollKey: string) => {
+      if (pendingScrollKey !== scrollKey) return;
+
+      requestAnimationFrame(() => {
+        detailScrollRefs.current[scrollKey]?.scrollToEnd({ animated: true });
+        setPendingScrollKey((current) => (current === scrollKey ? null : current));
+      });
+    },
+    [pendingScrollKey],
+  );
 
   const renderDetailPost = ({
     detailPost,
     useCountdown,
-    scrollRef,
+    scrollKey,
     scrollStyle,
     onSubmitComment,
   }: {
     detailPost: DetailPost;
     useCountdown: boolean;
-    scrollRef: React.RefObject<ScrollView | null>;
+    scrollKey: string;
     scrollStyle?: StyleProp<ViewStyle>;
     onSubmitComment: () => void;
   }) => (
     <>
       <ScrollView
-        ref={scrollRef}
+        ref={registerDetailScrollRef(scrollKey)}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="always"
-        onContentSizeChange={scrollToLatestComment}
+        onContentSizeChange={() => handleDetailContentSizeChange(scrollKey)}
         style={scrollStyle}
       >
         <View style={styles.viewModalHeader}>
@@ -134,7 +146,7 @@ export const ViewPostModal = ({
               Keyboard.dismiss();
               return;
             }
-            setShouldScrollToLatestComment(true);
+            setPendingScrollKey(scrollKey);
             Keyboard.dismiss();
             onSubmitComment();
           }}
@@ -179,7 +191,7 @@ export const ViewPostModal = ({
                   renderDetailPost({
                     detailPost: item,
                     useCountdown: true,
-                    scrollRef: postDetailScrollRef,
+                    scrollKey: `post:${item.id}`,
                     scrollStyle: { flexShrink: 1 },
                     onSubmitComment: () => handleAddComment(item.id),
                   })
@@ -190,7 +202,7 @@ export const ViewPostModal = ({
                         {renderDetailPost({
                           detailPost: selectedBoardPost,
                           useCountdown: false,
-                          scrollRef: boardPostDetailScrollRef,
+                          scrollKey: `boardPost:${item.id}:${selectedBoardPost.id}`,
                           scrollStyle: { maxHeight: 260, flexShrink: 1 },
                           onSubmitComment: () => handleAddBoardPostComment(item.id, selectedBoardPost.id),
                         })}

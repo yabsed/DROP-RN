@@ -12,6 +12,32 @@ const debuggerHost = Constants.expoConfig?.hostUri;
 const localhost = debuggerHost ? debuggerHost.split(':')[0] : 'localhost';
 const SERVER_URL = `http://${localhost}:3000`;
 
+// 이모지 마커가 안 보이는 현상과 깜빡임을 동시에 해결하기 위한 커스텀 마커 컴포넌트
+const CustomMarker = ({ post, onPress }) => {
+  const [tracksViewChanges, setTracksViewChanges] = useState(true);
+
+  useEffect(() => {
+    // 처음 렌더링 시에는 tracksViewChanges를 true로 두어 이모지가 정상적으로 그려지게 하고,
+    // 500ms 후에 false로 변경하여 지도를 움직일 때 깜빡이는 현상을 방지합니다.
+    const timer = setTimeout(() => {
+      setTracksViewChanges(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <Marker
+      coordinate={post.coordinate}
+      onPress={onPress}
+      tracksViewChanges={tracksViewChanges}
+    >
+      <View style={styles.markerContainer}>
+        <Text style={styles.emojiMarker}>{post.emoji}</Text>
+      </View>
+    </Marker>
+  );
+};
+
 export default function App() {
   const [myLocation, setMyLocation] = useState(null);
   const [otherUser, setOtherUser] = useState(null);
@@ -263,13 +289,11 @@ export default function App() {
           />
         )}
         {posts.map(post => (
-          <Marker
+          <CustomMarker
             key={post.id}
-            coordinate={post.coordinate}
+            post={post}
             onPress={() => handleMarkerPress(post)}
-          >
-            <Text style={styles.emojiMarker}>{post.emoji}</Text>
-          </Marker>
+          />
         ))}
       </MapView>
 
@@ -411,6 +435,11 @@ export default function App() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8F9FA', justifyContent: 'center', alignItems: 'center' },
   map: { ...StyleSheet.absoluteFillObject },
+  markerContainer: {
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   emojiMarker: {
     fontSize: 30,
   },

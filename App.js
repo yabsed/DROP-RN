@@ -67,27 +67,37 @@ export default function App() {
   const [myLocation, setMyLocation] = useState(null);
   const [otherUser, setOtherUser] = useState(null);
   
-  // 게시물(점) 관련 상태
+  // 게시물(점) 및 게시판 관련 상태
   const [posts, setPosts] = useState([
-    { id: 'd1', coordinate: { latitude: 37.471, longitude: 126.935 }, emoji: '🐟', title: '붕어빵 트럭 등장!', content: '슈크림 붕어빵 3개 2천원입니다. 줄 길어요!', createdAt: Date.now() - 100000, comments: [] },
-    { id: 'd2', coordinate: { latitude: 37.469, longitude: 126.933 }, emoji: '🎸', title: '도림천 버스킹 중', content: '노래 엄청 잘 부르시네요. 구경 오세요~', createdAt: Date.now() - 300000, comments: [] },
-    { id: 'd3', coordinate: { latitude: 37.472, longitude: 126.936 }, emoji: '🌧️', title: '갑자기 소나기', content: '우산 챙기세요! 갑자기 비가 쏟아집니다.', photo: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=400', createdAt: Date.now() - 500000, comments: [] },
-    { id: 'd4', coordinate: { latitude: 37.468, longitude: 126.934 }, emoji: '🐈', title: '고양이 찾아요', content: '노란색 치즈냥이 사람 손 엄청 잘 타요.', photo: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400', createdAt: Date.now() - 700000, comments: [] },
-    { id: 'd5', coordinate: { latitude: 37.470, longitude: 126.937 }, emoji: '🚨', title: '사거리 교통사고', content: '차량 두 대 접촉사고 났어요. 차 많이 막힙니다.', photo: 'https://images.unsplash.com/photo-1508344928928-7165b67de128?w=400', createdAt: Date.now() - 200000, comments: [] },
-    { id: 'd6', coordinate: { latitude: 37.473, longitude: 126.932 }, emoji: '🎉', title: '편의점 마감세일', content: '도시락 반값 할인 중입니다. 빨리 오세요!', createdAt: Date.now() - 400000, comments: [] },
-    { id: 'd7', coordinate: { latitude: 37.467, longitude: 126.938 }, emoji: '🔥', title: '불난 것 같아요', content: '저기 연기 엄청 나는데 119 불렀나요?', photo: 'https://images.unsplash.com/photo-1495556650867-99590cea3657?w=400', createdAt: Date.now() - 800000, comments: [] },
-    { id: 'd8', coordinate: { latitude: 37.474, longitude: 126.935 }, emoji: '🎬', title: '드라마 촬영 중', content: '유명 배우 온 것 같아요. 사람 엄청 많음.', photo: 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=400', createdAt: Date.now() - 150000, comments: [] },
-    { id: 'd9', coordinate: { latitude: 37.471, longitude: 126.931 }, emoji: '🚚', title: '이사차량 길막', content: '골목길 이사차량 때문에 못 지나갑니다. 우회하세요.', photo: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400', createdAt: Date.now() - 600000, comments: [] },
-    { id: 'd10', coordinate: { latitude: 37.469, longitude: 126.939 }, emoji: '🌈', title: '무지개 떴어요', content: '하늘 보세요! 쌍무지개 떴습니다.', createdAt: Date.now() - 50000, comments: [] },
+    { id: 'd1', type: 'post', coordinate: { latitude: 37.471, longitude: 126.935 }, emoji: '🐟', title: '붕어빵 트럭 등장!', content: '슈크림 붕어빵 3개 2천원입니다. 줄 길어요!', createdAt: Date.now() - 100000, comments: [] },
+    { id: 'd2', type: 'post', coordinate: { latitude: 37.469, longitude: 126.933 }, emoji: '🎸', title: '도림천 버스킹 중', content: '노래 엄청 잘 부르시네요. 구경 오세요~', createdAt: Date.now() - 300000, comments: [] },
+    { id: 'd3', type: 'post', coordinate: { latitude: 37.472, longitude: 126.936 }, emoji: '🌧️', title: '갑자기 소나기', content: '우산 챙기세요! 갑자기 비가 쏟아집니다.', photo: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=400', createdAt: Date.now() - 500000, comments: [] },
+    { id: 'd4', type: 'post', coordinate: { latitude: 37.468, longitude: 126.934 }, emoji: '🐈', title: '고양이 찾아요', content: '노란색 치즈냥이 사람 손 엄청 잘 타요.', photo: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400', createdAt: Date.now() - 700000, comments: [] },
+    { id: 'd5', type: 'post', coordinate: { latitude: 37.470, longitude: 126.937 }, emoji: '🚨', title: '사거리 교통사고', content: '차량 두 대 접촉사고 났어요. 차 많이 막힙니다.', photo: 'https://images.unsplash.com/photo-1508344928928-7165b67de128?w=400', createdAt: Date.now() - 200000, comments: [] },
+    { id: 'd6', type: 'post', coordinate: { latitude: 37.473, longitude: 126.932 }, emoji: '🎉', title: '편의점 마감세일', content: '도시락 반값 할인 중입니다. 빨리 오세요!', createdAt: Date.now() - 400000, comments: [] },
+    { id: 'd7', type: 'post', coordinate: { latitude: 37.467, longitude: 126.938 }, emoji: '🔥', title: '불난 것 같아요', content: '저기 연기 엄청 나는데 119 불렀나요?', photo: 'https://images.unsplash.com/photo-1495556650867-99590cea3657?w=400', createdAt: Date.now() - 800000, comments: [] },
+    { id: 'd8', type: 'post', coordinate: { latitude: 37.474, longitude: 126.935 }, emoji: '🎬', title: '드라마 촬영 중', content: '유명 배우 온 것 같아요. 사람 엄청 많음.', photo: 'https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=400', createdAt: Date.now() - 150000, comments: [] },
+    { id: 'd9', type: 'post', coordinate: { latitude: 37.471, longitude: 126.931 }, emoji: '🚚', title: '이사차량 길막', content: '골목길 이사차량 때문에 못 지나갑니다. 우회하세요.', photo: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400', createdAt: Date.now() - 600000, comments: [] },
+    { id: 'd10', type: 'post', coordinate: { latitude: 37.469, longitude: 126.939 }, emoji: '🌈', title: '무지개 떴어요', content: '하늘 보세요! 쌍무지개 떴습니다.', createdAt: Date.now() - 50000, comments: [] },
+    { id: 'b1', type: 'board', coordinate: { latitude: 37.475, longitude: 126.936 }, emoji: '🏪', title: '동네 마트 소식', description: '매일매일 할인 정보가 올라옵니다!', createdAt: Date.now(), boardPosts: [
+      { id: 'bp1', title: '오늘의 특가', content: '계란 한 판 4,000원!', createdAt: Date.now() - 100000, comments: [] }
+    ] },
   ]);
   const [modalVisible, setModalVisible] = useState(false);
   const [isAddingPost, setIsAddingPost] = useState(false);
-  const [newPost, setNewPost] = useState({ coordinate: null, emoji: '📍', title: '', content: '', photo: null });
+  const [newPost, setNewPost] = useState({ coordinate: null, emoji: '📍', title: '', content: '', description: '', photo: null, type: 'post' });
   
   // 선택된 게시물 보기 상태
   const [selectedPost, setSelectedPost] = useState(null);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [newComment, setNewComment] = useState('');
+
+  // 게시판 관련 상태
+  const [boardModalVisible, setBoardModalVisible] = useState(false);
+  const [selectedBoardPost, setSelectedBoardPost] = useState(null);
+  const [boardPostModalVisible, setBoardPostModalVisible] = useState(false);
+  const [addBoardPostModalVisible, setAddBoardPostModalVisible] = useState(false);
+  const [newBoardPost, setNewBoardPost] = useState({ title: '', content: '', photo: null });
 
   const socketRef = useRef(null);
   const locationSubscription = useRef(null);
@@ -164,13 +174,21 @@ export default function App() {
   };
 
   const handleSavePost = () => {
-    if (!newPost.title || !newPost.content) {
-      Alert.alert('오류', '제목과 내용을 입력해주세요.');
-      return;
+    if (newPost.type === 'post') {
+      if (!newPost.title || !newPost.content) {
+        Alert.alert('오류', '제목과 내용을 입력해주세요.');
+        return;
+      }
+      setPosts([...posts, { ...newPost, id: Date.now().toString(), comments: [], createdAt: Date.now() }]);
+    } else {
+      if (!newPost.title || !newPost.description) {
+        Alert.alert('오류', '스테이션 이름과 설명을 입력해주세요.');
+        return;
+      }
+      setPosts([...posts, { ...newPost, id: Date.now().toString(), boardPosts: [], createdAt: Date.now() }]);
     }
-    setPosts([...posts, { ...newPost, id: Date.now().toString(), comments: [], createdAt: Date.now() }]);
     setModalVisible(false);
-    setNewPost({ coordinate: null, emoji: '📍', title: '', content: '', photo: null });
+    setNewPost({ coordinate: null, emoji: '📍', title: '', content: '', description: '', photo: null, type: 'post' });
   };
 
   const handleAddComment = (postId) => {
@@ -199,7 +217,11 @@ export default function App() {
 
   const handleMarkerPress = (post) => {
     setSelectedPost(post);
-    setViewModalVisible(true);
+    if (post.type === 'board') {
+      setBoardModalVisible(true);
+    } else {
+      setViewModalVisible(true);
+    }
   };
 
   const onViewableItemsChanged = useRef(({ viewableItems }) => {
@@ -354,8 +376,23 @@ export default function App() {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>새 게시물 남기기</Text>
+            <Text style={styles.modalTitle}>{newPost.type === 'post' ? '새 스팟 남기기' : '새 스테이션 만들기'}</Text>
             
+            <View style={styles.typeSelector}>
+              <TouchableOpacity 
+                style={[styles.typeButton, newPost.type === 'post' && styles.typeButtonActive]}
+                onPress={() => setNewPost({ ...newPost, type: 'post' })}
+              >
+                <Text style={[styles.typeButtonText, newPost.type === 'post' && styles.typeButtonTextActive]}>스팟</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.typeButton, newPost.type === 'board' && styles.typeButtonActive]}
+                onPress={() => setNewPost({ ...newPost, type: 'board' })}
+              >
+                <Text style={[styles.typeButtonText, newPost.type === 'board' && styles.typeButtonTextActive]}>스테이션</Text>
+              </TouchableOpacity>
+            </View>
+
             <TextInput
               style={styles.input}
               placeholder="이모지 (예: 📍, 🍔, 📸)"
@@ -366,25 +403,47 @@ export default function App() {
             
             <TextInput
               style={styles.input}
-              placeholder="간결한 제목"
+              placeholder={newPost.type === 'post' ? "간결한 제목" : "스테이션 이름"}
               value={newPost.title}
               onChangeText={(text) => setNewPost({ ...newPost, title: text })}
             />
             
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="내용을 입력하세요"
-              value={newPost.content}
-              onChangeText={(text) => setNewPost({ ...newPost, content: text })}
-              multiline={true}
-              numberOfLines={4}
-            />
-            
-            <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
-              <Text style={styles.photoButtonText}>{newPost.photo ? '사진 변경' : '사진 추가'}</Text>
-            </TouchableOpacity>
-            {newPost.photo && (
-              <Image source={{ uri: newPost.photo }} style={styles.previewImage} />
+            {newPost.type === 'post' ? (
+              <>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  placeholder="내용을 입력하세요"
+                  value={newPost.content}
+                  onChangeText={(text) => setNewPost({ ...newPost, content: text })}
+                  multiline={true}
+                  numberOfLines={4}
+                />
+                
+                <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
+                  <Text style={styles.photoButtonText}>{newPost.photo ? '사진 변경' : '사진 추가'}</Text>
+                </TouchableOpacity>
+                {newPost.photo && (
+                  <Image source={{ uri: newPost.photo }} style={styles.previewImage} />
+                )}
+              </>
+            ) : (
+              <>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  placeholder="스테이션 설명을 입력하세요"
+                  value={newPost.description}
+                  onChangeText={(text) => setNewPost({ ...newPost, description: text })}
+                  multiline={true}
+                  numberOfLines={4}
+                />
+                
+                <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
+                  <Text style={styles.photoButtonText}>{newPost.photo ? '사진 변경' : '사진 추가'}</Text>
+                </TouchableOpacity>
+                {newPost.photo && (
+                  <Image source={{ uri: newPost.photo }} style={styles.previewImage} />
+                )}
+              </>
             )}
             
             <View style={styles.buttonContainer}>
@@ -411,12 +470,12 @@ export default function App() {
           style={styles.modalContainer}
         >
           <FlatList
-            data={posts}
+            data={posts.filter(p => p.type !== 'board')}
             keyExtractor={item => item.id}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            initialScrollIndex={selectedPost ? posts.findIndex(p => p.id === selectedPost.id) : 0}
+            initialScrollIndex={selectedPost && selectedPost.type !== 'board' ? posts.filter(p => p.type !== 'board').findIndex(p => p.id === selectedPost.id) : 0}
             getItemLayout={(data, index) => ({ length: screenWidth, offset: screenWidth * index, index })}
             onViewableItemsChanged={onViewableItemsChanged}
             viewabilityConfig={viewabilityConfig}
@@ -475,6 +534,227 @@ export default function App() {
               </View>
             )}
           />
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* 스테이션 보기 모달 */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={boardModalVisible}
+        onRequestClose={() => setBoardModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={[styles.modalView, { height: '80%', width: '90%' }]}>
+            {selectedPost && selectedPost.type === 'board' && (
+              <>
+                <View style={styles.boardHeader}>
+                  <Text style={styles.boardEmoji}>{selectedPost.emoji}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.boardTitle}>{selectedPost.title}</Text>
+                    <Text style={styles.boardDescription}>{selectedPost.description}</Text>
+                  </View>
+                </View>
+                
+                {selectedPost.photo && (
+                  <Image source={{ uri: selectedPost.photo }} style={styles.boardImage} resizeMode="cover" />
+                )}
+                
+                <View style={styles.boardPostsContainer}>
+                  <FlatList
+                    data={selectedPost.boardPosts}
+                    keyExtractor={item => item.id}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity 
+                        style={styles.boardPostItem}
+                        onPress={() => {
+                          setSelectedBoardPost(item);
+                          setBoardPostModalVisible(true);
+                        }}
+                      >
+                        <Text style={styles.boardPostTitle}>{item.title}</Text>
+                        <Text style={styles.boardPostPreview} numberOfLines={1}>{item.content}</Text>
+                        <Text style={styles.boardPostTime}>{new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+                      </TouchableOpacity>
+                    )}
+                    ListEmptyComponent={<Text style={styles.noCommentsText}>아직 게시물이 없습니다.</Text>}
+                  />
+                </View>
+
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => setBoardModalVisible(false)}>
+                    <Text style={styles.buttonText}>닫기</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={() => setAddBoardPostModalVisible(true)}>
+                    <Text style={styles.buttonText}>글쓰기</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* 스테이션 내 게시물 작성 모달 */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={addBoardPostModalVisible}
+        onRequestClose={() => setAddBoardPostModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>스테이션에 글쓰기</Text>
+            
+            <TextInput
+              style={styles.input}
+              placeholder="제목"
+              value={newBoardPost.title}
+              onChangeText={(text) => setNewBoardPost({ ...newBoardPost, title: text })}
+            />
+            
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="내용을 입력하세요"
+              value={newBoardPost.content}
+              onChangeText={(text) => setNewBoardPost({ ...newBoardPost, content: text })}
+              multiline={true}
+              numberOfLines={4}
+            />
+            
+            <TouchableOpacity style={styles.photoButton} onPress={async () => {
+              let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ['images'],
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 1,
+              });
+              if (!result.canceled) {
+                setNewBoardPost({ ...newBoardPost, photo: result.assets[0].uri });
+              }
+            }}>
+              <Text style={styles.photoButtonText}>{newBoardPost.photo ? '사진 변경' : '사진 추가'}</Text>
+            </TouchableOpacity>
+            {newBoardPost.photo && (
+              <Image source={{ uri: newBoardPost.photo }} style={styles.previewImage} />
+            )}
+            
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => setAddBoardPostModalVisible(false)}>
+                <Text style={styles.buttonText}>취소</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={() => {
+                if (!newBoardPost.title || !newBoardPost.content) {
+                  Alert.alert('오류', '제목과 내용을 입력해주세요.');
+                  return;
+                }
+                const updatedPosts = posts.map(p => {
+                  if (p.id === selectedPost.id) {
+                    const newBp = { ...newBoardPost, id: Date.now().toString(), createdAt: Date.now(), comments: [] };
+                    const updatedBoard = { ...p, boardPosts: [newBp, ...(p.boardPosts || [])] };
+                    setSelectedPost(updatedBoard);
+                    return updatedBoard;
+                  }
+                  return p;
+                });
+                setPosts(updatedPosts);
+                setAddBoardPostModalVisible(false);
+                setNewBoardPost({ title: '', content: '', photo: null });
+              }}>
+                <Text style={styles.buttonText}>저장</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 스테이션 내 게시물 보기 모달 */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={boardPostModalVisible}
+        onRequestClose={() => setBoardPostModalVisible(false)}
+      >
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.modalContainer}
+        >
+          {selectedBoardPost && (
+            <View style={[styles.viewModalContent, { maxHeight: '80%', width: '85%' }]}>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <View style={styles.viewModalHeader}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.viewModalTitle}>{selectedBoardPost.title}</Text>
+                    <Text style={styles.timerText}>{new Date(selectedBoardPost.createdAt).toLocaleString()}</Text>
+                  </View>
+                </View>
+                
+                {selectedBoardPost.photo && (
+                  <Image source={{ uri: selectedBoardPost.photo }} style={styles.viewModalImage} resizeMode="cover" />
+                )}
+                
+                <Text style={styles.viewModalDescription}>{selectedBoardPost.content}</Text>
+                
+                {/* 댓글 섹션 */}
+                <View style={styles.commentsSection}>
+                  <Text style={styles.commentsTitle}>댓글</Text>
+                  {(selectedBoardPost.comments || []).map(comment => (
+                    <View key={comment.id} style={styles.commentItem}>
+                      <Text style={styles.commentText}>{comment.text}</Text>
+                      <Text style={styles.commentTime}>{comment.createdAt}</Text>
+                    </View>
+                  ))}
+                  {(selectedBoardPost.comments || []).length === 0 && (
+                    <Text style={styles.noCommentsText}>아직 댓글이 없습니다.</Text>
+                  )}
+                </View>
+              </ScrollView>
+
+              <View style={styles.commentInputContainer}>
+                <TextInput
+                  style={styles.commentInput}
+                  placeholder="댓글을 입력하세요..."
+                  value={newComment}
+                  onChangeText={setNewComment}
+                />
+                <TouchableOpacity style={styles.commentSubmitButton} onPress={() => {
+                  if (!newComment.trim()) return;
+                  const comment = {
+                    id: Date.now().toString(),
+                    text: newComment,
+                    createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                  };
+                  const updatedPosts = posts.map(p => {
+                    if (p.id === selectedPost.id) {
+                      const updatedBoardPosts = p.boardPosts.map(bp => {
+                        if (bp.id === selectedBoardPost.id) {
+                          const updatedBp = { ...bp, comments: [...(bp.comments || []), comment] };
+                          setSelectedBoardPost(updatedBp);
+                          return updatedBp;
+                        }
+                        return bp;
+                      });
+                      const updatedBoard = { ...p, boardPosts: updatedBoardPosts };
+                      setSelectedPost(updatedBoard);
+                      return updatedBoard;
+                    }
+                    return p;
+                  });
+                  setPosts(updatedPosts);
+                  setNewComment('');
+                }}>
+                  <Ionicons name="send" size={16} color="white" />
+                </TouchableOpacity>
+              </View>
+              
+              <TouchableOpacity 
+                style={styles.closeButton} 
+                onPress={() => setBoardPostModalVisible(false)}
+              >
+                <Text style={styles.buttonText}>닫기</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </KeyboardAvoidingView>
       </Modal>
     </View>
@@ -596,6 +876,97 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 8,
     marginBottom: 15,
+  },
+  viewModalContent: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  typeSelector: {
+    flexDirection: 'row',
+    marginBottom: 15,
+    width: '100%',
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#007BFF',
+  },
+  typeButton: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: 'white',
+  },
+  typeButtonActive: {
+    backgroundColor: '#007BFF',
+  },
+  typeButtonText: {
+    color: '#007BFF',
+    fontWeight: 'bold',
+  },
+  typeButtonTextActive: {
+    color: 'white',
+  },
+  boardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+    width: '100%',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    paddingBottom: 10,
+  },
+  boardEmoji: {
+    fontSize: 40,
+    marginRight: 15,
+  },
+  boardTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  boardDescription: {
+    fontSize: 14,
+    color: '#666',
+  },
+  boardImage: {
+    width: '100%',
+    height: 150,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  boardPostsContainer: {
+    flex: 1,
+    width: '100%',
+    marginBottom: 15,
+  },
+  boardPostItem: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  boardPostTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  boardPostPreview: {
+    fontSize: 14,
+    color: '#555',
+    marginBottom: 5,
+  },
+  boardPostTime: {
+    fontSize: 12,
+    color: '#999',
+    textAlign: 'right',
   },
   viewModalContent: {
     width: '85%',

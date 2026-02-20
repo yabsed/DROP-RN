@@ -365,6 +365,7 @@ export default function App() {
         style={styles.map}
         initialRegion={INITIAL_REGION}
         showsUserLocation={true}
+        showsMyLocationButton={false}
         onPress={handleMapPress}
         onRegionChangeComplete={(region) => {
           mapRegionRef.current = region;
@@ -399,11 +400,30 @@ export default function App() {
         </View>
       )}
 
+      <TouchableOpacity
+        style={styles.myLocationButton}
+        onPress={() => {
+          if (!myLocation) return;
+          const { latitudeDelta, longitudeDelta } = mapRegionRef.current;
+          mapRef.current?.animateToRegion(
+            {
+              latitude: myLocation.latitude,
+              longitude: myLocation.longitude,
+              latitudeDelta,
+              longitudeDelta,
+            },
+            400
+          );
+        }}
+      >
+        <Ionicons name="locate" size={22} color="#0d6efd" />
+      </TouchableOpacity>
+
       <TouchableOpacity 
         style={styles.addButton} 
         onPress={() => setIsAddingPost(!isAddingPost)}
       >
-        <Ionicons name={isAddingPost ? "close" : "add"} size={30} color="white" />
+        <Ionicons name={isAddingPost ? "close" : "add"} size={22} color="white" />
       </TouchableOpacity>
 
       {/* 게시물 작성 모달 */}
@@ -890,7 +910,7 @@ const styles = StyleSheet.create({
   },
   instructionBanner: {
     position: 'absolute',
-    top: 50,
+    top: 120,
     backgroundColor: 'rgba(0,0,0,0.7)',
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -914,6 +934,23 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+    zIndex: 10,
+  },
+  myLocationButton: {
+    position: 'absolute',
+    right: 30,
+    bottom: 105,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 5,
     zIndex: 10,

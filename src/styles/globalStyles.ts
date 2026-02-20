@@ -151,19 +151,43 @@ export const styles = StyleSheet.create({
     backgroundColor: "#E9ECEF",
     padding: 10,
     borderRadius: 8,
-    width: "100%",
+    flex: 1,
     alignItems: "center",
     marginBottom: 10,
+    marginHorizontal: 4,
   },
   photoButtonText: {
     color: "#495057",
     fontWeight: "bold",
+  },
+  photoActionRow: {
+    width: "100%",
+    flexDirection: "row",
+    marginBottom: 6,
   },
   previewImage: {
     width: "100%",
     height: 150,
     borderRadius: 8,
     marginBottom: 15,
+  },
+  cameraContainer: {
+    flex: 1,
+    backgroundColor: "black",
+  },
+  cameraView: {
+    flex: 1,
+  },
+  cameraControls: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 12,
+    paddingTop: 14,
+    paddingBottom: 24,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+  },
+  cameraControlButton: {
+    marginHorizontal: 4,
   },
   viewModalContent: {
     width: "85%",

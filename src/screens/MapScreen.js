@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Alert, Modal, TextInput, Text, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform, FlatList, Dimensions, BackHandler } from 'react-native';
+import { View, Alert, TextInput, Text, TouchableOpacity, Platform, Dimensions, BackHandler } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
@@ -8,7 +8,9 @@ import io from 'socket.io-client';
 
 import { initialPosts } from '../../dummyData';
 import { CustomMarker } from '../components/CustomMarker';
-import { CountdownTimer } from '../components/CountdownTimer';
+import { CreatePostModal } from '../components/modals/CreatePostModal';
+import { ViewPostModal } from '../components/modals/ViewPostModal';
+import { AddBoardPostModal } from '../components/modals/AddBoardPostModal';
 import { styles } from '../styles/globalStyles';
 import { customMapStyle } from '../styles/mapStyles';
 import { SERVER_URL, INITIAL_REGION } from '../utils/constants';
@@ -358,392 +360,46 @@ export default function MapScreen() {
         <Ionicons name={isAddingPost ? "close" : "add"} size={22} color="white" />
       </TouchableOpacity>
 
-      {/* 게시물 작성 모달 */}
-      <Modal
-        animationType="slide"
-        transparent={true}
+      <CreatePostModal
         visible={modalVisible}
-        onRequestClose={() => {
-          handleBackNavigation();
-        }}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>{newPost.type === 'post' ? '새 스팟 남기기' : '새 스테이션 만들기'}</Text>
-            
-            <View style={styles.typeSelector}>
-              <TouchableOpacity 
-                style={[styles.typeButton, newPost.type === 'post' && styles.typeButtonActive]}
-                onPress={() => setNewPost({ ...newPost, type: 'post' })}
-              >
-                <Text style={[styles.typeButtonText, newPost.type === 'post' && styles.typeButtonTextActive]}>스팟</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.typeButton, newPost.type === 'board' && styles.typeButtonActive]}
-                onPress={() => setNewPost({ ...newPost, type: 'board' })}
-              >
-                <Text style={[styles.typeButtonText, newPost.type === 'board' && styles.typeButtonTextActive]}>스테이션</Text>
-              </TouchableOpacity>
-            </View>
+        onClose={() => handleBackNavigation()}
+        newPost={newPost}
+        setNewPost={setNewPost}
+        onSave={handleSavePost}
+        onPickImage={pickImage}
+      />
 
-            <TextInput
-              style={styles.input}
-              placeholder="이모지 (예: 📍, 🍔, 📸)"
-              value={newPost.emoji}
-              onChangeText={(text) => setNewPost({ ...newPost, emoji: text })}
-              maxLength={2}
-            />
-            
-            <TextInput
-              style={styles.input}
-              placeholder={newPost.type === 'post' ? "간결한 제목" : "스테이션 이름"}
-              value={newPost.title}
-              onChangeText={(text) => setNewPost({ ...newPost, title: text })}
-            />
-            
-            {newPost.type === 'post' ? (
-              <>
-                <TextInput
-                  style={[styles.input, styles.textArea]}
-                  placeholder="내용을 입력하세요"
-                  value={newPost.content}
-                  onChangeText={(text) => setNewPost({ ...newPost, content: text })}
-                  multiline={true}
-                  numberOfLines={4}
-                />
-                
-                <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
-                  <Text style={styles.photoButtonText}>{newPost.photo ? '사진 변경' : '사진 추가'}</Text>
-                </TouchableOpacity>
-                {newPost.photo && (
-                  <Image source={{ uri: newPost.photo }} style={styles.previewImage} />
-                )}
-              </>
-            ) : (
-              <>
-                <TextInput
-                  style={[styles.input, styles.textArea]}
-                  placeholder="스테이션 설명을 입력하세요"
-                  value={newPost.description}
-                  onChangeText={(text) => setNewPost({ ...newPost, description: text })}
-                  multiline={true}
-                  numberOfLines={4}
-                />
-                
-                <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
-                  <Text style={styles.photoButtonText}>{newPost.photo ? '사진 변경' : '사진 추가'}</Text>
-                </TouchableOpacity>
-                {newPost.photo && (
-                  <Image source={{ uri: newPost.photo }} style={styles.previewImage} />
-                )}
-              </>
-            )}
-            
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => setModalVisible(false)}>
-                <Text style={styles.buttonText}>취소</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={handleSavePost}>
-                <Text style={styles.buttonText}>저장</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* 통합 보기 모달 (스와이핑) */}
-      <Modal
-        animationType="fade"
-        transparent={true}
+      <ViewPostModal
         visible={viewModalVisible}
-        onRequestClose={() => {
-          handleBackNavigation();
-        }}
-      >
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.modalContainer}
-        >
-          <FlatList
-            data={viewablePosts}
-            extraData={posts}
-            keyExtractor={item => item.id}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            initialScrollIndex={safeInitialIndex}
-            getItemLayout={(data, index) => ({ length: screenWidth, offset: screenWidth * index, index })}
-            onViewableItemsChanged={onViewableItemsChanged}
-            viewabilityConfig={viewabilityConfig}
-            renderItem={({ item }) => (
-              <View style={{ width: screenWidth, justifyContent: 'center', alignItems: 'center' }}>
-                <View style={[styles.viewModalContent, { maxHeight: '80%', width: '85%' }]}>
-                  <View style={styles.swipeHintContainer}>
-                    <Ionicons name="swap-horizontal" size={14} color="#8b8b8b" />
-                    <Text style={styles.swipeHintText}>스와이프</Text>
-                  </View>
+        onClose={() => handleBackNavigation()}
+        viewablePosts={viewablePosts}
+        posts={posts}
+        safeInitialIndex={safeInitialIndex}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
+        selectedBoardPost={selectedBoardPost}
+        setSelectedBoardPost={setSelectedBoardPost}
+        selectedBoardPostBoardId={selectedBoardPostBoardId}
+        setSelectedBoardPostBoardId={setSelectedBoardPostBoardId}
+        newComment={newComment}
+        setNewComment={setNewComment}
+        handleAddComment={handleAddComment}
+        handleAddBoardPostComment={handleAddBoardPostComment}
+        setTargetBoardId={setTargetBoardId}
+        setAddBoardPostModalVisible={setAddBoardPostModalVisible}
+      />
 
-                  {item.type === 'post' ? (
-                    <>
-                      <ScrollView showsVerticalScrollIndicator={false}>
-                        <View style={styles.viewModalHeader}>
-                          <Text style={styles.viewModalEmoji}>{item.emoji}</Text>
-                          <View style={{ flex: 1 }}>
-                            <Text style={styles.viewModalTitle}>{item.title}</Text>
-                            <CountdownTimer createdAt={item.createdAt} />
-                          </View>
-                        </View>
-                        
-                        {item.photo && (
-                          <Image source={{ uri: item.photo }} style={styles.viewModalImage} resizeMode="cover" />
-                        )}
-                        
-                        <Text style={styles.viewModalDescription}>{item.content}</Text>
-                        
-                        {/* 댓글 섹션 */}
-                        <View style={styles.commentsSection}>
-                          <Text style={styles.commentsTitle}>댓글</Text>
-                          {(item.comments || []).map(comment => (
-                            <View key={comment.id} style={styles.commentItem}>
-                              <Text style={styles.commentText}>{comment.text}</Text>
-                              <Text style={styles.commentTime}>{comment.createdAt}</Text>
-                            </View>
-                          ))}
-                          {(item.comments || []).length === 0 && (
-                            <Text style={styles.noCommentsText}>아직 댓글이 없습니다.</Text>
-                          )}
-                        </View>
-                      </ScrollView>
-
-                      <View style={styles.commentInputContainer}>
-                        <TextInput
-                          style={styles.commentInput}
-                          placeholder="댓글을 입력하세요..."
-                          value={newComment}
-                          onChangeText={setNewComment}
-                        />
-                        <TouchableOpacity style={styles.commentSubmitButton} onPress={() => handleAddComment(item.id)}>
-                          <Ionicons name="send" size={16} color="white" />
-                        </TouchableOpacity>
-                      </View>
-                    </>
-                  ) : (
-                    <>
-                      {selectedBoardPost && selectedBoardPostBoardId === item.id ? (
-                        <View style={styles.inlineBoardPostContainer}>
-                          <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 260 }}>
-                            <View style={styles.viewModalHeader}>
-                              <Text style={styles.viewModalEmoji}>{selectedBoardPost.emoji || '📝'}</Text>
-                              <View style={{ flex: 1 }}>
-                                <Text style={styles.viewModalTitle}>{selectedBoardPost.title}</Text>
-                                <Text style={styles.timerText}>{new Date(selectedBoardPost.createdAt).toLocaleString()}</Text>
-                              </View>
-                            </View>
-
-                            {selectedBoardPost.photo && (
-                              <Image source={{ uri: selectedBoardPost.photo }} style={styles.viewModalImage} resizeMode="cover" />
-                            )}
-
-                            <Text style={styles.viewModalDescription}>{selectedBoardPost.content}</Text>
-
-                            <View style={styles.commentsSection}>
-                              <Text style={styles.commentsTitle}>댓글</Text>
-                              {(selectedBoardPost.comments || []).map(comment => (
-                                <View key={comment.id} style={styles.commentItem}>
-                                  <Text style={styles.commentText}>{comment.text}</Text>
-                                  <Text style={styles.commentTime}>{comment.createdAt}</Text>
-                                </View>
-                              ))}
-                              {(selectedBoardPost.comments || []).length === 0 && (
-                                <Text style={styles.noCommentsText}>아직 댓글이 없습니다.</Text>
-                              )}
-                            </View>
-                          </ScrollView>
-
-                          <View style={styles.commentInputContainer}>
-                            <TextInput
-                              style={styles.commentInput}
-                              placeholder="댓글을 입력하세요..."
-                              value={newComment}
-                              onChangeText={setNewComment}
-                            />
-                            <TouchableOpacity
-                              style={styles.commentSubmitButton}
-                              onPress={() => handleAddBoardPostComment(item.id, selectedBoardPost.id)}
-                            >
-                              <Ionicons name="send" size={16} color="white" />
-                            </TouchableOpacity>
-                          </View>
-                        </View>
-                      ) : (
-                        <>
-                          <View style={styles.boardHeader}>
-                            <Text style={styles.boardEmoji}>{item.emoji}</Text>
-                            <View style={{ flex: 1 }}>
-                              <Text style={styles.boardTitle}>{item.title}</Text>
-                              <Text style={styles.boardDescription}>{item.description}</Text>
-                            </View>
-                          </View>
-
-                          {item.photo && (
-                            <Image source={{ uri: item.photo }} style={styles.boardImage} resizeMode="cover" />
-                          )}
-
-                          <View style={styles.boardPostsContainer}>
-                            <ScrollView
-                              showsVerticalScrollIndicator={false}
-                              nestedScrollEnabled
-                            >
-                              {(Array.isArray(item.boardPosts) ? item.boardPosts : []).map((bp) => (
-                                <TouchableOpacity
-                                  key={bp.id}
-                                  style={styles.boardPostItem}
-                                  onPress={() => {
-                                    setSelectedBoardPost(bp);
-                                    setSelectedBoardPostBoardId(item.id);
-                                  }}
-                                >
-                                  <View style={styles.boardPostTitleRow}>
-                                    <Text style={styles.boardPostEmoji}>{bp.emoji || '📝'}</Text>
-                                    <Text style={styles.boardPostTitle}>{bp.title}</Text>
-                                  </View>
-                                  <Text style={styles.boardPostPreview} numberOfLines={1}>{bp.content}</Text>
-                                  <Text style={styles.boardPostTime}>{new Date(bp.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
-                                </TouchableOpacity>
-                              ))}
-                              {(Array.isArray(item.boardPosts) ? item.boardPosts : []).length === 0 && (
-                                <Text style={styles.noCommentsText}>아직 게시물이 없습니다.</Text>
-                              )}
-                            </ScrollView>
-                          </View>
-
-                          <View style={styles.buttonContainer}>
-                            <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={() => {
-                              setTargetBoardId(item.id);
-                              setAddBoardPostModalVisible(true);
-                            }}>
-                              <Text style={styles.buttonText}>글쓰기</Text>
-                            </TouchableOpacity>
-                          </View>
-                        </>
-                      )}
-                    </>
-                  )}
-                  
-                  <TouchableOpacity 
-                    style={styles.closeButton} 
-                    onPress={() => {
-                      if (selectedBoardPost && selectedBoardPostBoardId) {
-                        setSelectedBoardPost(null);
-                        setSelectedBoardPostBoardId(null);
-                        setNewComment('');
-                      } else {
-                        setViewModalVisible(false);
-                        setSelectedBoardPost(null);
-                        setSelectedBoardPostBoardId(null);
-                      }
-                    }}
-                  >
-                    <Text style={styles.buttonText}>닫기</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-          />
-        </KeyboardAvoidingView>
-      </Modal>
-
-      {/* 스테이션 내 게시물 작성 모달 */}
-      <Modal
-        animationType="slide"
-        transparent={true}
+      <AddBoardPostModal
         visible={addBoardPostModalVisible}
-        onRequestClose={() => {
-          handleBackNavigation();
-        }}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>스테이션에 글쓰기</Text>
-
-            <TextInput
-              style={styles.input}
-              placeholder="이모지 (예: 📝, 📣, 🍽️)"
-              value={newBoardPost.emoji}
-              onChangeText={(text) => setNewBoardPost({ ...newBoardPost, emoji: text })}
-              maxLength={2}
-            />
-            
-            <TextInput
-              style={styles.input}
-              placeholder="제목"
-              value={newBoardPost.title}
-              onChangeText={(text) => setNewBoardPost({ ...newBoardPost, title: text })}
-            />
-            
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="내용을 입력하세요"
-              value={newBoardPost.content}
-              onChangeText={(text) => setNewBoardPost({ ...newBoardPost, content: text })}
-              multiline={true}
-              numberOfLines={4}
-            />
-            
-            <TouchableOpacity style={styles.photoButton} onPress={async () => {
-              let result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ['images'],
-                allowsEditing: true,
-                aspect: [4, 3],
-                quality: 1,
-              });
-              if (!result.canceled) {
-                setNewBoardPost({ ...newBoardPost, photo: result.assets[0].uri });
-              }
-            }}>
-              <Text style={styles.photoButtonText}>{newBoardPost.photo ? '사진 변경' : '사진 추가'}</Text>
-            </TouchableOpacity>
-            {newBoardPost.photo && (
-              <Image source={{ uri: newBoardPost.photo }} style={styles.previewImage} />
-            )}
-            
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => {
-                setAddBoardPostModalVisible(false);
-                setTargetBoardId(null);
-                setNewBoardPost({ emoji: '📝', title: '', content: '', photo: null });
-              }}>
-                <Text style={styles.buttonText}>취소</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={() => {
-                if (!newBoardPost.title || !newBoardPost.content) {
-                  Alert.alert('오류', '제목과 내용을 입력해주세요.');
-                  return;
-                }
-                if (!targetBoardId) {
-                  Alert.alert('오류', '게시판을 다시 선택한 뒤 글쓰기를 시도해주세요.');
-                  return;
-                }
-                const updatedPosts = posts.map(p => {
-                  if (p.id === targetBoardId) {
-                    const newBp = { ...newBoardPost, id: Date.now().toString(), createdAt: Date.now(), comments: [] };
-                    const updatedBoard = { ...p, boardPosts: [newBp, ...(p.boardPosts || [])] };
-                    setSelectedPost(updatedBoard);
-                    return updatedBoard;
-                  }
-                  return p;
-                });
-                setPosts(updatedPosts);
-                setAddBoardPostModalVisible(false);
-                setNewBoardPost({ emoji: '📝', title: '', content: '', photo: null });
-                setTargetBoardId(null);
-              }}>
-                <Text style={styles.buttonText}>저장</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => handleBackNavigation()}
+        newBoardPost={newBoardPost}
+        setNewBoardPost={setNewBoardPost}
+        targetBoardId={targetBoardId}
+        setTargetBoardId={setTargetBoardId}
+        posts={posts}
+        setPosts={setPosts}
+        setSelectedPost={setSelectedPost}
+      />
 
     </View>
   );

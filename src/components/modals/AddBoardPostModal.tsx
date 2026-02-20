@@ -1,25 +1,14 @@
 import React from "react";
-import { Image, Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
-import * as ImagePicker from "expo-image-picker";
+import { Modal, Text, TouchableOpacity, View } from "react-native";
 import { styles } from "../../styles/globalStyles";
 import { useMapStore } from "../../store/useMapStore";
+import { BaseInput } from "../form/BaseInput";
+import { DynamicForm } from "../form/DynamicForm";
+import { FORM_CONFIG } from "../form/postSchema";
 
 export const AddBoardPostModal = () => {
   const { addBoardPostModalVisible, newBoardPost, updateNewBoardPostField, handleSaveBoardPost, handleBackNavigation } =
     useMapStore();
-
-  const handlePickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      updateNewBoardPostField("photo", result.assets[0].uri);
-    }
-  };
 
   return (
     <Modal
@@ -32,37 +21,26 @@ export const AddBoardPostModal = () => {
         <View style={styles.modalView}>
           <Text style={styles.modalTitle}>스테이션 글쓰기</Text>
 
-          <TextInput
-            style={styles.input}
+          <BaseInput
+            name="emoji"
             placeholder="이모지 (예: 📝)"
-            placeholderTextColor="#8b8b8b"
             value={newBoardPost.emoji}
             onChangeText={(text) => updateNewBoardPostField("emoji", text)}
             maxLength={2}
           />
 
-          <TextInput
-            style={styles.input}
+          <BaseInput
+            name="title"
             placeholder="제목"
-            placeholderTextColor="#8b8b8b"
             value={newBoardPost.title}
             onChangeText={(text) => updateNewBoardPostField("title", text)}
           />
 
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="내용을 입력하세요"
-            placeholderTextColor="#8b8b8b"
-            value={newBoardPost.content}
-            onChangeText={(text) => updateNewBoardPostField("content", text)}
-            multiline
-            numberOfLines={4}
+          <DynamicForm 
+            config={FORM_CONFIG.boardPost} 
+            values={newBoardPost} 
+            onChange={(name, value) => updateNewBoardPostField(name as any, value)} 
           />
-
-          <TouchableOpacity style={styles.photoButton} onPress={handlePickImage}>
-            <Text style={styles.photoButtonText}>{newBoardPost.photo ? "사진 변경" : "사진 추가"}</Text>
-          </TouchableOpacity>
-          {newBoardPost.photo && <Image source={{ uri: newBoardPost.photo }} style={styles.previewImage} />}
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={handleBackNavigation}>

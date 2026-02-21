@@ -42,15 +42,6 @@ export const compressImageForUpload = async ({
 
 export const getFileSizeBytes = async (uri: string): Promise<number | null> => {
   try {
-    const info = await FileSystem.getInfoAsync(uri);
-    if (info.exists && typeof info.size === "number" && info.size > 0) {
-      return info.size;
-    }
-  } catch {
-    // Fall through to alternate strategies.
-  }
-
-  try {
     const file = new FileSystem.File(uri);
     const info = file.info();
     if (typeof info.size === "number" && info.size > 0) {

@@ -4,6 +4,11 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { useController, useFormContext } from 'react-hook-form';
 import { styles } from '../../styles/globalStyles';
+import {
+  compressImageForUpload,
+  getCameraCaptureOptions,
+  getLibraryPickerOptions,
+} from '../../utils/imageCompression';
 
 interface ImagePickerFieldProps {
   name: string;
@@ -25,15 +30,15 @@ export const ImagePickerField = ({ name, placeholder = 'Add photo' }: ImagePicke
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+    const result = await ImagePicker.launchImageLibraryAsync(getLibraryPickerOptions());
 
-    if (!result.canceled) {
-      field.onChange(result.assets[0].uri);
+    if (!result.canceled && result.assets[0]?.uri) {
+      const compressedUri = await compressImageForUpload({
+        uri: result.assets[0].uri,
+        width: result.assets[0].width,
+        height: result.assets[0].height,
+      });
+      field.onChange(compressedUri);
     }
   };
 
@@ -54,13 +59,15 @@ export const ImagePickerField = ({ name, placeholder = 'Add photo' }: ImagePicke
       return;
     }
 
-    const result = await cameraRef.current.takePictureAsync({
-      quality: 0.9,
-      skipProcessing: true,
-    });
+    const result = await cameraRef.current.takePictureAsync(getCameraCaptureOptions());
 
     if (result?.uri) {
-      field.onChange(result.uri);
+      const compressedUri = await compressImageForUpload({
+        uri: result.uri,
+        width: result.width,
+        height: result.height,
+      });
+      field.onChange(compressedUri);
       setCameraModalVisible(false);
     }
   };

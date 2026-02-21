@@ -19,6 +19,10 @@ import * as ImagePicker from "expo-image-picker";
 import { styles } from "../../styles/globalStyles";
 import { useMapStore } from "../../store/useMapStore";
 import { ActivityStatus, Board, Coordinate, Mission, MissionType } from "../../types/map";
+import {
+  compressImageForUpload,
+  getMissionCameraOptions,
+} from "../../utils/imageCompression";
 
 const screenWidth = Dimensions.get("window").width;
 const MISSION_PROXIMITY_METERS = 200;
@@ -107,14 +111,15 @@ export const ViewPostModal = ({
       return null;
     }
 
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ["images"],
-      allowsEditing: false,
-      quality: 1,
-    });
+    const result = await ImagePicker.launchCameraAsync(getMissionCameraOptions());
 
     if (result.canceled || !result.assets[0]?.uri) return null;
-    return result.assets[0].uri;
+    const compressedUri = await compressImageForUpload({
+      uri: result.assets[0].uri,
+      width: result.assets[0].width,
+      height: result.assets[0].height,
+    });
+    return compressedUri;
   };
 
   const handleReceiptMission = async (board: Board, mission: Mission) => {

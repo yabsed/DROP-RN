@@ -143,6 +143,9 @@ export const ViewPostModal = ({
   const [submittingReceiptMissionId, setSubmittingReceiptMissionId] = useState<string | null>(null);
   const [submittingTreasureMissionId, setSubmittingTreasureMissionId] = useState<string | null>(null);
   const [missionImageSummaryByMissionId, setMissionImageSummaryByMissionId] = useState<Record<string, string>>({});
+  const [hiddenTreasureGuideImageByMissionId, setHiddenTreasureGuideImageByMissionId] = useState<
+    Record<string, boolean>
+  >({});
 
   const captureMissionImage = async (
     permissionDeniedMessage: string,
@@ -442,8 +445,18 @@ export const ViewPostModal = ({
             {mission.type === "camera_treasure_hunt" && mission.treasureGuideText ? (
               <View style={styles.missionTreasureGuideContainer}>
                 <Text style={styles.missionRuleText}>보물 힌트: {mission.treasureGuideText}</Text>
-                {mission.treasureGuideImageUri ? (
-                  <Image source={{ uri: mission.treasureGuideImageUri }} style={styles.missionTreasureGuideImage} />
+                {mission.treasureGuideImageUri && !hiddenTreasureGuideImageByMissionId[mission.id] ? (
+                  <Image
+                    source={{ uri: mission.treasureGuideImageUri }}
+                    style={styles.missionTreasureGuideImage}
+                    resizeMode="cover"
+                    onError={() => {
+                      setHiddenTreasureGuideImageByMissionId((current) => ({
+                        ...current,
+                        [mission.id]: true,
+                      }));
+                    }}
+                  />
                 ) : null}
               </View>
             ) : null}

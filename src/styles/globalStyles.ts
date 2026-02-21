@@ -760,12 +760,13 @@ export const styles = StyleSheet.create({
   },
   missionTreasureGuideContainer: {
     width: "100%",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   missionTreasureGuideImage: {
     width: "100%",
-    height: 140,
+    height: 96,
     borderRadius: 10,
+    marginTop: 4,
   },
   missionProgressContainer: {
     width: "100%",

@@ -13,8 +13,15 @@ import { useMapStore } from "../store/useMapStore";
 import { Board, Coordinate } from "../types/map";
 import { INITIAL_REGION } from "../utils/constants";
 
+type ActivitiesModalMode = "stores" | "board";
+
 export default function MapScreen() {
   const [myLocation, setMyLocation] = useState<Location.LocationObjectCoords | null>(null);
+  const [activitiesModalMode, setActivitiesModalMode] = useState<ActivitiesModalMode>("stores");
+  const [activitiesModalBoard, setActivitiesModalBoard] = useState<{ boardId: string; boardTitle: string } | null>(
+    null,
+  );
+  const [canReturnToStoreList, setCanReturnToStoreList] = useState(false);
 
   const {
     boards,
@@ -84,27 +91,29 @@ export default function MapScreen() {
     );
   };
 
-  const handleFocusBoardFromActivity = (boardId: string) => {
-    const board = boards.find((item) => item.id === boardId);
-    if (!board) {
-      Alert.alert("가게 찾기 실패", "해당 활동의 가게 정보를 찾지 못했어요.");
-      return;
-    }
+  const openBoardActivities = (board: Board) => {
+    setActivitiesModalMode("board");
+    setActivitiesModalBoard({ boardId: board.id, boardTitle: board.title });
+    setCanReturnToStoreList(false);
+    setMyActivitiesModalVisible(true);
+  };
 
-    setMyActivitiesModalVisible(false);
-    setSelectedBoard(board);
-    setViewModalVisible(false);
+  const openParticipatedStoreList = () => {
+    setActivitiesModalMode("stores");
+    setActivitiesModalBoard(null);
+    setCanReturnToStoreList(false);
+    setMyActivitiesModalVisible(true);
+  };
 
-    const { latitudeDelta, longitudeDelta } = mapRegionRef.current;
-    mapRef.current?.animateToRegion(
-      {
-        latitude: board.coordinate.latitude,
-        longitude: board.coordinate.longitude,
-        latitudeDelta,
-        longitudeDelta,
-      },
-      500,
-    );
+  const openBoardActivitiesFromStoreList = (boardId: string, boardTitle: string) => {
+    setActivitiesModalMode("board");
+    setActivitiesModalBoard({ boardId, boardTitle });
+    setCanReturnToStoreList(true);
+  };
+
+  const backToParticipatedStoreList = () => {
+    setActivitiesModalMode("stores");
+    setActivitiesModalBoard(null);
   };
 
   const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: Array<ViewToken<Board>> }) => {
@@ -197,7 +206,7 @@ export default function MapScreen() {
         <Ionicons name="locate" size={22} color="#0d6efd" />
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.myActivitiesButton} onPress={() => setMyActivitiesModalVisible(true)}>
+      <TouchableOpacity style={styles.myActivitiesButton} onPress={openParticipatedStoreList}>
         <Ionicons name="list" size={20} color="white" />
       </TouchableOpacity>
 
@@ -207,9 +216,17 @@ export default function MapScreen() {
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
         currentCoordinate={currentCoordinate}
+        onOpenBoardActivities={openBoardActivities}
       />
 
-      <MyActivitiesModal onFocusBoard={handleFocusBoardFromActivity} />
+      <MyActivitiesModal
+        mode={activitiesModalMode}
+        boardId={activitiesModalBoard?.boardId}
+        boardTitle={activitiesModalBoard?.boardTitle}
+        canReturnToStoreList={canReturnToStoreList}
+        onSelectStore={openBoardActivitiesFromStoreList}
+        onBackToStoreList={backToParticipatedStoreList}
+      />
     </View>
   );
 }

@@ -16,12 +16,51 @@ const formatCoordinate = (latitude?: number, longitude?: number): string => {
 };
 
 type Props = {
-  onFocusBoard: (boardId: string) => void;
+  mode: "stores" | "board";
+  boardId?: string;
+  boardTitle?: string;
+  canReturnToStoreList: boolean;
+  onSelectStore: (boardId: string, boardTitle: string) => void;
+  onBackToStoreList: () => void;
 };
 
-export const MyActivitiesModal = ({ onFocusBoard }: Props) => {
+type ParticipatedStoreSummary = {
+  boardId: string;
+  boardTitle: string;
+  activityCount: number;
+  lastActivityAt: number;
+};
+
+export const MyActivitiesModal = ({
+  mode,
+  boardId,
+  boardTitle,
+  canReturnToStoreList,
+  onSelectStore,
+  onBackToStoreList,
+}: Props) => {
   const { myActivitiesModalVisible, setMyActivitiesModalVisible, participatedActivities } = useMapStore();
   const activities = [...participatedActivities].sort((a, b) => b.startedAt - a.startedAt);
+  const filteredActivities = mode === "board" && boardId ? activities.filter((activity) => activity.boardId === boardId) : [];
+  const participatedStores = activities.reduce<ParticipatedStoreSummary[]>((acc, activity) => {
+    const existing = acc.find((item) => item.boardId === activity.boardId);
+    if (existing) {
+      existing.activityCount += 1;
+      if (activity.startedAt > existing.lastActivityAt) {
+        existing.lastActivityAt = activity.startedAt;
+      }
+      return acc;
+    }
+
+    acc.push({
+      boardId: activity.boardId,
+      boardTitle: activity.boardTitle,
+      activityCount: 1,
+      lastActivityAt: activity.startedAt,
+    });
+    return acc;
+  }, []);
+  participatedStores.sort((a, b) => b.lastActivityAt - a.lastActivityAt);
 
   return (
     <Modal
@@ -32,13 +71,42 @@ export const MyActivitiesModal = ({ onFocusBoard }: Props) => {
     >
       <View style={styles.modalContainer}>
         <View style={styles.activitiesModalView}>
-          <Text style={styles.modalTitle}>내가 참여한 활동</Text>
+          <Text style={styles.modalTitle}>
+            {mode === "stores" ? "내가 참여한 가게" : `${boardTitle ?? "이 가게"} 활동 내역`}
+          </Text>
 
-          {activities.length === 0 ? (
-            <Text style={styles.noCommentsText}>아직 참여한 활동이 없습니다.</Text>
+          {mode === "stores" ? (
+            participatedStores.length === 0 ? (
+              <Text style={styles.noCommentsText}>아직 활동에 참여한 가게가 없습니다.</Text>
+            ) : (
+              <FlatList
+                data={participatedStores}
+                keyExtractor={(item) => item.boardId}
+                style={styles.activitiesList}
+                renderItem={({ item }) => (
+                  <View style={styles.participatedStoreItem}>
+                    <Text style={styles.participatedStoreTitle}>{item.boardTitle}</Text>
+                    <Text style={styles.participatedStoreMeta}>참여 활동 수: {item.activityCount}회</Text>
+                    <Text style={styles.participatedStoreMeta}>
+                      최근 참여: {new Date(item.lastActivityAt).toLocaleString()}
+                    </Text>
+                    <View style={styles.participatedStoreActionRow}>
+                      <TouchableOpacity
+                        style={styles.participatedStoreButton}
+                        onPress={() => onSelectStore(item.boardId, item.boardTitle)}
+                      >
+                        <Text style={styles.participatedStoreButtonText}>활동 내역 보기</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+              />
+            )
+          ) : filteredActivities.length === 0 ? (
+            <Text style={styles.noCommentsText}>이 가게에서 참여한 활동이 없습니다.</Text>
           ) : (
             <FlatList
-              data={activities}
+              data={filteredActivities}
               keyExtractor={(item) => item.id}
               style={styles.activitiesList}
               renderItem={({ item }) => (
@@ -77,17 +145,17 @@ export const MyActivitiesModal = ({ onFocusBoard }: Props) => {
                       종료 GPS: {formatCoordinate(item.endCoordinate.latitude, item.endCoordinate.longitude)}
                     </Text>
                   ) : null}
-                  <View style={styles.activityActionRow}>
-                    <TouchableOpacity style={styles.activityFocusButton} onPress={() => onFocusBoard(item.boardId)}>
-                      <Text style={styles.activityFocusButtonText}>이 가게로 포커스</Text>
-                    </TouchableOpacity>
-                  </View>
                 </View>
               )}
             />
           )}
 
           <View style={styles.buttonContainer}>
+            {mode === "board" && canReturnToStoreList ? (
+              <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={onBackToStoreList}>
+                <Text style={styles.buttonText}>가게 목록</Text>
+              </TouchableOpacity>
+            ) : null}
             <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => setMyActivitiesModalVisible(false)}>
               <Text style={styles.buttonText}>닫기</Text>
             </TouchableOpacity>

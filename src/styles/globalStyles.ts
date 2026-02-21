@@ -595,18 +595,37 @@ export const styles = StyleSheet.create({
     color: "#555",
     marginTop: 2,
   },
-  activityActionRow: {
+  participatedStoreItem: {
+    padding: 12,
+    backgroundColor: "#f7f9fc",
+    borderRadius: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#e8edf5",
+  },
+  participatedStoreTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#222",
+    marginBottom: 4,
+  },
+  participatedStoreMeta: {
+    fontSize: 12,
+    color: "#555",
+    marginTop: 2,
+  },
+  participatedStoreActionRow: {
     flexDirection: "row",
     justifyContent: "flex-end",
     marginTop: 10,
   },
-  activityFocusButton: {
+  participatedStoreButton: {
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
     backgroundColor: "#eaf2ff",
   },
-  activityFocusButtonText: {
+  participatedStoreButtonText: {
     fontSize: 12,
     fontWeight: "700",
     color: "#0d6efd",

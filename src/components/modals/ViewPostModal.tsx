@@ -25,6 +25,7 @@ type Props = {
   onViewableItemsChanged: (info: { viewableItems: Array<ViewToken<Board>> }) => void;
   viewabilityConfig: ViewabilityConfig;
   currentCoordinate: Coordinate | null;
+  onOpenBoardActivities: (board: Board) => void;
 };
 
 const getMissionTypeText = (missionType: MissionType): string => {
@@ -45,12 +46,12 @@ export const ViewPostModal = ({
   onViewableItemsChanged,
   viewabilityConfig,
   currentCoordinate,
+  onOpenBoardActivities,
 }: Props) => {
   const {
     viewModalVisible,
     participatedActivities,
     repeatVisitProgressByMissionId,
-    setMyActivitiesModalVisible,
     certifyQuietTimeMission,
     certifyRepeatVisitMission,
     startStayMission,
@@ -190,7 +191,7 @@ export const ViewPostModal = ({
 
                     <TouchableOpacity
                       style={styles.inlineActivitiesButton}
-                      onPress={() => setMyActivitiesModalVisible(true)}
+                      onPress={() => onOpenBoardActivities(item)}
                     >
                       <Ionicons name="list" size={14} color="#0d6efd" />
                       <Text style={styles.inlineActivitiesButtonText}>내 활동</Text>

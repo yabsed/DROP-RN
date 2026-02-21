@@ -1,4 +1,4 @@
-package com.anonymous.drop
+package com.anonymous.localhost
 
 import android.app.Application
 import android.content.res.Configuration

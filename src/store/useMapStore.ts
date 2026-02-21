@@ -23,6 +23,12 @@ type MapState = {
     currentCoordinate: Coordinate | null,
     receiptImageUri: string,
   ) => Promise<void>;
+  certifyTreasureHuntMission: (
+    board: Board,
+    mission: Mission,
+    currentCoordinate: Coordinate | null,
+    capturedImageUri: string,
+  ) => Promise<void>;
   certifyRepeatVisitMission: (board: Board, mission: Mission, currentCoordinate: Coordinate | null) => void;
   startStayMission: (board: Board, mission: Mission, currentCoordinate: Coordinate | null) => void;
   completeStayMission: (activityId: string, currentCoordinate: Coordinate | null) => void;
@@ -40,6 +46,16 @@ type ReceiptVerificationPayload = {
   itemPrice: number;
   coordinate: Coordinate;
   receiptImageUri: string;
+  clientTimestamp: number;
+};
+
+type TreasureHuntVerificationPayload = {
+  boardId: string;
+  missionId: string;
+  guideImageUri: string;
+  guideText: string;
+  coordinate: Coordinate;
+  capturedImageUri: string;
   clientTimestamp: number;
 };
 
@@ -110,6 +126,21 @@ const verifyReceiptPurchaseWithMockBackend = async (
 
   await new Promise((resolve) => setTimeout(resolve, 700));
   return { verified: true };
+};
+
+const verifyTreasureHuntWithMockBackend = async (
+  payload: TreasureHuntVerificationPayload,
+): Promise<{ verified: boolean; similarityScore?: number; failureReason?: string }> => {
+  if (!payload.capturedImageUri) {
+    return { verified: false, failureReason: "촬영한 이미지가 첨부되지 않았어요." };
+  }
+
+  if (!payload.guideText || payload.guideText.length > 20) {
+    return { verified: false, failureReason: "보물찾기 안내 문구는 20자 이하로 제공되어야 해요." };
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 700));
+  return { verified: true, similarityScore: 0.91 };
 };
 
 export const useMapStore = create<MapState>((set, get) => ({
@@ -223,6 +254,67 @@ export const useMapStore = create<MapState>((set, get) => ({
     Alert.alert(
       "구매 인증 완료",
       `${mission.receiptItemName} 구매가 확인되어 ${mission.rewardCoins} 코인을 획득했어요.`,
+    );
+  },
+
+  certifyTreasureHuntMission: async (board, mission, currentCoordinate, capturedImageUri) => {
+    if (mission.type !== "camera_treasure_hunt") return;
+
+    const coordinate = getCoordinateNearBoardOrAlert(currentCoordinate, board);
+    if (!coordinate) return;
+
+    if (!mission.treasureGuideImageUri || !mission.treasureGuideText) {
+      Alert.alert("보물찾기 정보 없음", "가이드 사진/문구가 아직 등록되지 않았어요.");
+      return;
+    }
+
+    const { participatedActivities } = get();
+    const alreadyCompleted = participatedActivities.some(
+      (activity) =>
+        activity.boardId === board.id && activity.missionId === mission.id && activity.status === "completed",
+    );
+    if (alreadyCompleted) {
+      Alert.alert("이미 완료됨", "이 활동은 이미 인증을 완료했습니다.");
+      return;
+    }
+
+    const clientTimestamp = Date.now();
+    const verificationResult = await verifyTreasureHuntWithMockBackend({
+      boardId: board.id,
+      missionId: mission.id,
+      guideImageUri: mission.treasureGuideImageUri,
+      guideText: mission.treasureGuideText,
+      coordinate,
+      capturedImageUri,
+      clientTimestamp,
+    });
+
+    if (!verificationResult.verified) {
+      Alert.alert("보물찾기 인증 실패", verificationResult.failureReason ?? "이미지 유사도 검증에 실패했습니다.");
+      return;
+    }
+
+    const now = Date.now();
+    const newActivity: ParticipatedActivity = {
+      id: `${mission.id}-treasure-${now}`,
+      boardId: board.id,
+      boardTitle: board.title,
+      missionId: mission.id,
+      missionType: mission.type,
+      missionTitle: `${mission.title} (${mission.treasureGuideText})`,
+      rewardCoins: mission.rewardCoins,
+      status: "completed",
+      startedAt: now,
+      completedAt: now,
+      receiptImageUri: capturedImageUri,
+      startCoordinate: coordinate,
+      endCoordinate: coordinate,
+    };
+
+    set((state) => ({ participatedActivities: [newActivity, ...state.participatedActivities] }));
+    Alert.alert(
+      "보물찾기 인증 완료",
+      `${Math.round((verificationResult.similarityScore ?? 0) * 100)}% 유사도로 판정되어 ${mission.rewardCoins} 코인을 획득했어요.`,
     );
   },
 

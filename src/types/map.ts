@@ -3,7 +3,12 @@ export type Coordinate = {
   longitude: number;
 };
 
-export type MissionType = "quiet_time_visit" | "stay_duration" | "receipt_purchase" | "repeat_visit_stamp";
+export type MissionType =
+  | "quiet_time_visit"
+  | "stay_duration"
+  | "receipt_purchase"
+  | "camera_treasure_hunt"
+  | "repeat_visit_stamp";
 
 export type Mission = {
   id: string;
@@ -16,6 +21,8 @@ export type Mission = {
   quietTimeEndHour?: number;
   receiptItemName?: string;
   receiptItemPrice?: number;
+  treasureGuideText?: string;
+  treasureGuideImageUri?: string;
   stampGoalCount?: number;
 };
 

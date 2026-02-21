@@ -39,7 +39,8 @@ const missionPriorityByType: Record<MissionType, number> = {
   quiet_time_visit: 0,
   stay_duration: 1,
   receipt_purchase: 2,
-  repeat_visit_stamp: 3,
+  camera_treasure_hunt: 3,
+  repeat_visit_stamp: 4,
 };
 
 const formatWon = (amount: number): string => `${amount.toLocaleString("ko-KR")}원`;
@@ -47,6 +48,7 @@ const formatWon = (amount: number): string => `${amount.toLocaleString("ko-KR")}
 const getMissionTypeText = (missionType: MissionType): string => {
   if (missionType === "quiet_time_visit") return "한산 시간 방문 인증";
   if (missionType === "receipt_purchase") return "영수증 구매 인증";
+  if (missionType === "camera_treasure_hunt") return "카메라 보물찾기";
   if (missionType === "repeat_visit_stamp") return "반복 방문 스탬프";
   return "체류 시간 인증";
 };
@@ -54,6 +56,7 @@ const getMissionTypeText = (missionType: MissionType): string => {
 const getMissionTypeEmoji = (missionType: MissionType): string => {
   if (missionType === "quiet_time_visit") return "🕒";
   if (missionType === "receipt_purchase") return "🧾";
+  if (missionType === "camera_treasure_hunt") return "📸";
   if (missionType === "repeat_visit_stamp") return "🎟️";
   return "⏱️";
 };
@@ -92,6 +95,7 @@ export const ViewPostModal = ({
     guestbookEntriesByBoardId,
     certifyQuietTimeMission,
     certifyReceiptPurchaseMission,
+    certifyTreasureHuntMission,
     certifyRepeatVisitMission,
     startStayMission,
     completeStayMission,
@@ -101,6 +105,7 @@ export const ViewPostModal = ({
   const [activeTabByBoardId, setActiveTabByBoardId] = useState<Record<string, BoardTab>>({});
   const [guestbookDraftByBoardId, setGuestbookDraftByBoardId] = useState<Record<string, string>>({});
   const [submittingReceiptMissionId, setSubmittingReceiptMissionId] = useState<string | null>(null);
+  const [submittingTreasureMissionId, setSubmittingTreasureMissionId] = useState<string | null>(null);
 
   const getBoardTab = (boardId: string): BoardTab => activeTabByBoardId[boardId] ?? "missions";
   const getGuestbookDraft = (boardId: string): string => guestbookDraftByBoardId[boardId] ?? "";
@@ -126,6 +131,23 @@ export const ViewPostModal = ({
     }));
   };
 
+  const captureMissionImage = async (permissionDeniedMessage: string): Promise<string | null> => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert("카메라 권한 필요", permissionDeniedMessage);
+      return null;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ["images"],
+      allowsEditing: false,
+      quality: 1,
+    });
+
+    if (result.canceled || !result.assets[0]?.uri) return null;
+    return result.assets[0].uri;
+  };
+
   const handleReceiptMission = async (board: Board, mission: Mission) => {
     if (mission.type !== "receipt_purchase") return;
     if (!currentCoordinate) {
@@ -142,25 +164,41 @@ export const ViewPostModal = ({
       return;
     }
 
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert("카메라 권한 필요", "영수증 촬영을 위해 카메라 권한을 허용해주세요.");
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ["images"],
-      allowsEditing: false,
-      quality: 1,
-    });
-
-    if (result.canceled || !result.assets[0]?.uri) return;
+    const imageUri = await captureMissionImage("영수증 촬영을 위해 카메라 권한을 허용해주세요.");
+    if (!imageUri) return;
 
     setSubmittingReceiptMissionId(mission.id);
     try {
-      await certifyReceiptPurchaseMission(board, mission, currentCoordinate, result.assets[0].uri);
+      await certifyReceiptPurchaseMission(board, mission, currentCoordinate, imageUri);
     } finally {
       setSubmittingReceiptMissionId(null);
+    }
+  };
+
+  const handleTreasureMission = async (board: Board, mission: Mission) => {
+    if (mission.type !== "camera_treasure_hunt") return;
+    if (!currentCoordinate) {
+      Alert.alert("위치 필요", "GPS 위치를 확인할 수 없어요. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
+    const distance = getDistanceMeters(currentCoordinate, board.coordinate);
+    if (distance > MISSION_PROXIMITY_METERS) {
+      Alert.alert(
+        "거리 확인 필요",
+        `${board.title}에서 약 ${Math.round(distance)}m 떨어져 있어요. ${MISSION_PROXIMITY_METERS}m 이내에서 다시 시도해주세요.`,
+      );
+      return;
+    }
+
+    const imageUri = await captureMissionImage("보물찾기 촬영을 위해 카메라 권한을 허용해주세요.");
+    if (!imageUri) return;
+
+    setSubmittingTreasureMissionId(mission.id);
+    try {
+      await certifyTreasureHuntMission(board, mission, currentCoordinate, imageUri);
+    } finally {
+      setSubmittingTreasureMissionId(null);
     }
   };
 
@@ -246,6 +284,32 @@ export const ViewPostModal = ({
       );
     }
 
+    if (mission.type === "camera_treasure_hunt") {
+      if (completedActivity) {
+        return (
+          <View style={styles.missionCompletedContainer}>
+            <Text style={styles.missionCompletedText}>참여 완료 +{completedActivity.rewardCoins} 코인</Text>
+            {completedActivity.receiptImageUri ? (
+              <Image source={{ uri: completedActivity.receiptImageUri }} style={styles.missionReceiptPreviewImage} />
+            ) : null}
+          </View>
+        );
+      }
+
+      const isSubmitting = submittingTreasureMissionId === mission.id;
+      return (
+        <TouchableOpacity
+          style={[styles.button, styles.saveButton, isSubmitting ? { opacity: 0.65 } : null]}
+          disabled={isSubmitting}
+          onPress={() => {
+            void handleTreasureMission(board, mission);
+          }}
+        >
+          <Text style={styles.buttonText}>{isSubmitting ? "보물 사진 검증 중..." : "카메라로 보물 촬영"}</Text>
+        </TouchableOpacity>
+      );
+    }
+
     if (completedActivity) {
       return <Text style={styles.missionCompletedText}>참여 완료 +{completedActivity.rewardCoins} 코인</Text>;
     }
@@ -318,6 +382,14 @@ export const ViewPostModal = ({
               <Text style={styles.missionRuleText}>
                 구매 대상: {mission.receiptItemName} ({formatWon(mission.receiptItemPrice)})
               </Text>
+            ) : null}
+            {mission.type === "camera_treasure_hunt" &&
+            mission.treasureGuideText &&
+            mission.treasureGuideImageUri ? (
+              <View style={styles.missionTreasureGuideContainer}>
+                <Text style={styles.missionRuleText}>보물 힌트: {mission.treasureGuideText}</Text>
+                <Image source={{ uri: mission.treasureGuideImageUri }} style={styles.missionTreasureGuideImage} />
+              </View>
             ) : null}
 
             <View style={styles.missionActionContainer}>{renderMissionAction(board, mission)}</View>

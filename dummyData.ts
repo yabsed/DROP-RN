@@ -61,6 +61,11 @@ type ReceiptTarget = {
   itemPrice: number;
 };
 
+type TreasureTarget = {
+  guideText: string;
+  guideImageUri: string;
+};
+
 const receiptTargets: ReceiptTarget[] = [
   { itemName: "아메리카노", itemPrice: 4500 },
   { itemName: "크루아상", itemPrice: 4200 },
@@ -72,7 +77,43 @@ const receiptTargets: ReceiptTarget[] = [
   { itemName: "파스타 런치", itemPrice: 13800 },
 ];
 
+const treasureTargets: TreasureTarget[] = [
+  {
+    guideText: "입구 앞 노란 의자",
+    guideImageUri: "https://picsum.photos/seed/drop-treasure-1/640/420",
+  },
+  {
+    guideText: "창가 옆 머그컵",
+    guideImageUri: "https://picsum.photos/seed/drop-treasure-2/640/420",
+  },
+  {
+    guideText: "카운터 종이백",
+    guideImageUri: "https://picsum.photos/seed/drop-treasure-3/640/420",
+  },
+  {
+    guideText: "벽면 포스터 하단",
+    guideImageUri: "https://picsum.photos/seed/drop-treasure-4/640/420",
+  },
+  {
+    guideText: "초록 화분 옆 테이블",
+    guideImageUri: "https://picsum.photos/seed/drop-treasure-5/640/420",
+  },
+  {
+    guideText: "메뉴판 아래 스티커",
+    guideImageUri: "https://picsum.photos/seed/drop-treasure-6/640/420",
+  },
+  {
+    guideText: "계산대 옆 빨대통",
+    guideImageUri: "https://picsum.photos/seed/drop-treasure-7/640/420",
+  },
+  {
+    guideText: "창문 손잡이 근처",
+    guideImageUri: "https://picsum.photos/seed/drop-treasure-8/640/420",
+  },
+];
+
 const getReceiptTarget = (index: number): ReceiptTarget => receiptTargets[index % receiptTargets.length];
+const getTreasureTarget = (index: number): TreasureTarget => treasureTargets[index % treasureTargets.length];
 const formatWon = (amount: number): string => `${amount.toLocaleString("ko-KR")}원`;
 
 const boardSeeds: BoardSeed[] = [
@@ -431,7 +472,9 @@ const seongsuBoards: Board[] = boardSeeds.map((seed, index): Board => {
   const longitude = BASE_COORDINATE.longitude + seed.longitudeOffset;
   const quietTimeRange = parseQuietTimeRange(seed.quietTimeLabel);
   const receiptTarget = getReceiptTarget(index);
+  const treasureTarget = getTreasureTarget(index);
   const receiptReward = Math.max(Math.round(seed.stayReward * 0.75), 16);
+  const treasureReward = Math.max(Math.round(seed.stayReward * 0.7), 15);
   const stampGoalCount = seed.stampGoalCount ?? 5;
   const stampReward = seed.stampReward ?? Math.max(seed.stayReward + 8, 30);
 
@@ -472,6 +515,15 @@ const seongsuBoards: Board[] = boardSeeds.map((seed, index): Board => {
       },
       {
         id: `${seed.id}-m4`,
+        type: "camera_treasure_hunt",
+        title: "카메라로 보물찾기",
+        description: `가이드 사진과 "${treasureTarget.guideText}" 힌트를 보고 같은 장면을 촬영해 인증하세요.`,
+        rewardCoins: treasureReward,
+        treasureGuideText: treasureTarget.guideText,
+        treasureGuideImageUri: treasureTarget.guideImageUri,
+      },
+      {
+        id: `${seed.id}-m5`,
         type: "repeat_visit_stamp",
         title: `반복 방문 스탬프 (${stampGoalCount}회)`,
         description: `하루 1회 방문 인증으로 스탬프를 모으고 ${stampGoalCount}개를 채우면 보상을 받아요.`,
@@ -520,6 +572,15 @@ const legacyBoards: Board[] = [
       },
       {
         id: "legacy-b1-m4",
+        type: "camera_treasure_hunt",
+        title: "카메라로 보물찾기",
+        description: "가이드 사진과 \"창가 옆 머그컵\" 힌트를 보고 같은 장면을 촬영해 인증하세요.",
+        rewardCoins: 20,
+        treasureGuideText: "창가 옆 머그컵",
+        treasureGuideImageUri: "https://picsum.photos/seed/drop-legacy-treasure-1/640/420",
+      },
+      {
+        id: "legacy-b1-m5",
         type: "repeat_visit_stamp",
         title: "반복 방문 스탬프 (5회)",
         description: "하루 1회 방문 인증으로 스탬프를 모아 5개를 채우면 보상이 지급돼요.",
@@ -565,6 +626,15 @@ const legacyBoards: Board[] = [
       },
       {
         id: "legacy-b2-m4",
+        type: "camera_treasure_hunt",
+        title: "카메라로 보물찾기",
+        description: "가이드 사진과 \"카운터 종이백\" 힌트를 보고 같은 장면을 촬영해 인증하세요.",
+        rewardCoins: 17,
+        treasureGuideText: "카운터 종이백",
+        treasureGuideImageUri: "https://picsum.photos/seed/drop-legacy-treasure-2/640/420",
+      },
+      {
+        id: "legacy-b2-m5",
         type: "repeat_visit_stamp",
         title: "반복 방문 스탬프 (5회)",
         description: "하루 1회 방문 인증으로 스탬프를 모아 5개를 채우면 보상이 지급돼요.",
@@ -610,6 +680,15 @@ const legacyBoards: Board[] = [
       },
       {
         id: "legacy-b3-m4",
+        type: "camera_treasure_hunt",
+        title: "카메라로 보물찾기",
+        description: "가이드 사진과 \"메뉴판 아래 스티커\" 힌트를 보고 같은 장면을 촬영해 인증하세요.",
+        rewardCoins: 25,
+        treasureGuideText: "메뉴판 아래 스티커",
+        treasureGuideImageUri: "https://picsum.photos/seed/drop-legacy-treasure-3/640/420",
+      },
+      {
+        id: "legacy-b3-m5",
         type: "repeat_visit_stamp",
         title: "반복 방문 스탬프 (5회)",
         description: "하루 1회 방문 인증으로 스탬프를 모아 5개를 채우면 보상이 지급돼요.",
@@ -655,6 +734,15 @@ const legacyBoards: Board[] = [
       },
       {
         id: "legacy-b4-m4",
+        type: "camera_treasure_hunt",
+        title: "카메라로 보물찾기",
+        description: "가이드 사진과 \"초록 화분 옆 테이블\" 힌트를 보고 같은 장면을 촬영해 인증하세요.",
+        rewardCoins: 18,
+        treasureGuideText: "초록 화분 옆 테이블",
+        treasureGuideImageUri: "https://picsum.photos/seed/drop-legacy-treasure-4/640/420",
+      },
+      {
+        id: "legacy-b4-m5",
         type: "repeat_visit_stamp",
         title: "반복 방문 스탬프 (5회)",
         description: "하루 1회 방문 인증으로 스탬프를 모아 5개를 채우면 보상이 지급돼요.",

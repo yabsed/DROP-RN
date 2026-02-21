@@ -1,6 +1,5 @@
 import { Alert } from "react-native";
 import { create } from "zustand";
-import { initialBoards } from "../../dummyData";
 import { fetchBoardsFromStoreMissions } from "../api/missionDefinitionApi";
 import { Board, Coordinate, GuestbookEntry, Mission, ParticipatedActivity, RepeatVisitProgress } from "../types/map";
 
@@ -153,7 +152,7 @@ const verifyTreasureHuntWithMockBackend = async (
 };
 
 export const useMapStore = create<MapState>((set, get) => ({
-  boards: initialBoards,
+  boards: [],
   isLoadingBoards: false,
   boardsLoadError: null,
   selectedBoard: null,
@@ -172,8 +171,8 @@ export const useMapStore = create<MapState>((set, get) => ({
       if (fetchedBoards.length === 0) {
         set({
           isLoadingBoards: false,
-          boardsLoadError: "등록된 매장 데이터가 없어 기본 샘플 데이터를 사용합니다.",
-          boards: initialBoards,
+          boardsLoadError: "등록된 매장 데이터가 없습니다.",
+          boards: [],
         });
         return;
       }
@@ -194,7 +193,7 @@ export const useMapStore = create<MapState>((set, get) => ({
       set({
         isLoadingBoards: false,
         boardsLoadError: error instanceof Error ? error.message : "매장 정보를 불러오지 못했습니다.",
-        boards: initialBoards,
+        boards: [],
       });
     }
   },

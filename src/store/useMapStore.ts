@@ -488,7 +488,7 @@ export const useMapStore = create<MapState>((set, get) => ({
     }
 
     try {
-      const attempt = await attemptMission(missionId, { imageUrl: receiptImageUri }, token);
+      const attempt = await attemptMission(missionId, { imageUri: receiptImageUri }, token);
       if (attempt.status !== "SUCCESS") {
         Alert.alert("구매 인증 실패", getAttemptFailureMessage(attempt, "영수증 검증에 실패했습니다."));
         return;
@@ -540,7 +540,7 @@ export const useMapStore = create<MapState>((set, get) => ({
     }
 
     try {
-      const attempt = await attemptMission(missionId, { imageUrl: capturedImageUri }, token);
+      const attempt = await attemptMission(missionId, { imageUri: capturedImageUri }, token);
       if (attempt.status !== "SUCCESS") {
         Alert.alert("보물찾기 인증 실패", getAttemptFailureMessage(attempt, "이미지 유사도 검증에 실패했습니다."));
         return;

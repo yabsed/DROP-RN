@@ -29,11 +29,13 @@ type Props = {
 
 const getMissionTypeText = (missionType: MissionType): string => {
   if (missionType === "quiet_time_visit") return "한산 시간 방문 인증";
+  if (missionType === "repeat_visit_stamp") return "반복 방문 스탬프";
   return "체류 시간 인증";
 };
 
 const getMissionTypeEmoji = (missionType: MissionType): string => {
   if (missionType === "quiet_time_visit") return "🕒";
+  if (missionType === "repeat_visit_stamp") return "🎟️";
   return "⏱️";
 };
 
@@ -47,14 +49,47 @@ export const ViewPostModal = ({
   const {
     viewModalVisible,
     participatedActivities,
+    repeatVisitProgressByMissionId,
     setMyActivitiesModalVisible,
     certifyQuietTimeMission,
+    certifyRepeatVisitMission,
     startStayMission,
     completeStayMission,
     handleBackNavigation,
   } = useMapStore();
 
   const renderMissionAction = (board: Board, mission: Mission) => {
+    if (mission.type === "repeat_visit_stamp") {
+      const stampGoalCount = mission.stampGoalCount ?? 5;
+      const progress = repeatVisitProgressByMissionId[mission.id];
+      const currentStampCount = progress?.currentStampCount ?? 0;
+      const completedRounds = progress?.completedRounds ?? 0;
+
+      return (
+        <View style={styles.stampMissionContainer}>
+          <Text style={styles.missionProgressText}>
+            현재 스탬프: {currentStampCount}/{stampGoalCount} · 카드 완성 {completedRounds}회
+          </Text>
+
+          <View style={styles.stampRow}>
+            {Array.from({ length: stampGoalCount }).map((_, index) => (
+              <View
+                key={`${mission.id}-stamp-slot-${index}`}
+                style={[styles.stampDot, index < currentStampCount ? styles.stampDotFilled : null]}
+              />
+            ))}
+          </View>
+
+          <TouchableOpacity
+            style={[styles.button, styles.saveButton]}
+            onPress={() => certifyRepeatVisitMission(board, mission, currentCoordinate)}
+          >
+            <Text style={styles.buttonText}>오늘 방문 인증하기</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
     const completedActivity = participatedActivities.find(
       (activity) =>
         activity.boardId === board.id && activity.missionId === mission.id && activity.status === "completed",
@@ -135,7 +170,7 @@ export const ViewPostModal = ({
         ) : (
           <FlatList
             data={viewableBoards}
-            extraData={participatedActivities}
+            extraData={{ participatedActivities, repeatVisitProgressByMissionId }}
             keyExtractor={(item) => item.id}
             horizontal
             pagingEnabled
@@ -190,6 +225,11 @@ export const ViewPostModal = ({
 
                         {mission.type === "stay_duration" && mission.minDurationMinutes ? (
                           <Text style={styles.missionRuleText}>필수 체류 시간: {mission.minDurationMinutes}분</Text>
+                        ) : null}
+                        {mission.type === "repeat_visit_stamp" && mission.stampGoalCount ? (
+                          <Text style={styles.missionRuleText}>
+                            목표 스탬프: {mission.stampGoalCount}개 (하루 1회 인증)
+                          </Text>
                         ) : null}
 
                         <View style={styles.missionActionContainer}>{renderMissionAction(item, mission)}</View>

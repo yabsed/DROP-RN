@@ -516,6 +516,27 @@ export const styles = StyleSheet.create({
     color: "#616161",
     marginBottom: 6,
   },
+  stampMissionContainer: {
+    width: "100%",
+  },
+  stampRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  stampDot: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: "#b7c2d7",
+    backgroundColor: "#ffffff",
+    marginRight: 6,
+  },
+  stampDotFilled: {
+    backgroundColor: "#0d6efd",
+    borderColor: "#0d6efd",
+  },
   activitiesModalView: {
     width: "88%",
     maxHeight: "80%",
@@ -573,6 +594,22 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: "#555",
     marginTop: 2,
+  },
+  activityActionRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 10,
+  },
+  activityFocusButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: "#eaf2ff",
+  },
+  activityFocusButtonText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#0d6efd",
   },
 });
 

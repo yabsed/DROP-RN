@@ -3,7 +3,7 @@ export type Coordinate = {
   longitude: number;
 };
 
-export type MissionType = "quiet_time_visit" | "stay_duration";
+export type MissionType = "quiet_time_visit" | "stay_duration" | "repeat_visit_stamp";
 
 export type Mission = {
   id: string;
@@ -14,6 +14,7 @@ export type Mission = {
   minDurationMinutes?: number;
   quietTimeStartHour?: number;
   quietTimeEndHour?: number;
+  stampGoalCount?: number;
 };
 
 export type Board = {
@@ -43,6 +44,14 @@ export type ParticipatedActivity = {
   requiredMinutes?: number;
   startCoordinate: Coordinate;
   endCoordinate?: Coordinate;
+};
+
+export type RepeatVisitProgress = {
+  boardId: string;
+  missionId: string;
+  currentStampCount: number;
+  completedRounds: number;
+  lastStampedAt?: number;
 };
 
 export type Post = Board;

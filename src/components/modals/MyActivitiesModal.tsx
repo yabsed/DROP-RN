@@ -6,6 +6,7 @@ import { MissionType } from "../../types/map";
 
 const getMissionTypeLabel = (missionType: MissionType): string => {
   if (missionType === "quiet_time_visit") return "한산 시간 방문 인증";
+  if (missionType === "repeat_visit_stamp") return "반복 방문 스탬프";
   return "체류 시간 인증";
 };
 
@@ -14,7 +15,11 @@ const formatCoordinate = (latitude?: number, longitude?: number): string => {
   return `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
 };
 
-export const MyActivitiesModal = () => {
+type Props = {
+  onFocusBoard: (boardId: string) => void;
+};
+
+export const MyActivitiesModal = ({ onFocusBoard }: Props) => {
   const { myActivitiesModalVisible, setMyActivitiesModalVisible, participatedActivities } = useMapStore();
   const activities = [...participatedActivities].sort((a, b) => b.startedAt - a.startedAt);
 
@@ -55,7 +60,9 @@ export const MyActivitiesModal = () => {
                   </View>
 
                   <Text style={styles.activityMetaText}>유형: {getMissionTypeLabel(item.missionType)}</Text>
-                  <Text style={styles.activityMetaText}>보상: +{item.rewardCoins} 코인</Text>
+                  <Text style={styles.activityMetaText}>
+                    보상: {item.rewardCoins > 0 ? `+${item.rewardCoins} 코인` : "스탬프 적립"}
+                  </Text>
                   <Text style={styles.activityMetaText}>
                     시작: {new Date(item.startedAt).toLocaleString()}
                   </Text>
@@ -70,6 +77,11 @@ export const MyActivitiesModal = () => {
                       종료 GPS: {formatCoordinate(item.endCoordinate.latitude, item.endCoordinate.longitude)}
                     </Text>
                   ) : null}
+                  <View style={styles.activityActionRow}>
+                    <TouchableOpacity style={styles.activityFocusButton} onPress={() => onFocusBoard(item.boardId)}>
+                      <Text style={styles.activityFocusButtonText}>이 가게로 포커스</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               )}
             />

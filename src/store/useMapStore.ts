@@ -1,7 +1,7 @@
 import { Alert } from "react-native";
 import { create } from "zustand";
 import { initialBoards } from "../../dummyData";
-import { Board, Coordinate, Mission, ParticipatedActivity } from "../types/map";
+import { Board, Coordinate, Mission, ParticipatedActivity, RepeatVisitProgress } from "../types/map";
 
 type MapState = {
   boards: Board[];
@@ -9,12 +9,14 @@ type MapState = {
   viewModalVisible: boolean;
   searchQuery: string;
   participatedActivities: ParticipatedActivity[];
+  repeatVisitProgressByMissionId: Record<string, RepeatVisitProgress>;
   myActivitiesModalVisible: boolean;
   setSelectedBoard: (selectedBoard: Board | null) => void;
   setViewModalVisible: (viewModalVisible: boolean) => void;
   setSearchQuery: (searchQuery: string) => void;
   setMyActivitiesModalVisible: (myActivitiesModalVisible: boolean) => void;
   certifyQuietTimeMission: (board: Board, mission: Mission, currentCoordinate: Coordinate | null) => void;
+  certifyRepeatVisitMission: (board: Board, mission: Mission, currentCoordinate: Coordinate | null) => void;
   startStayMission: (board: Board, mission: Mission, currentCoordinate: Coordinate | null) => void;
   completeStayMission: (activityId: string, currentCoordinate: Coordinate | null) => void;
   handleBackNavigation: () => boolean;
@@ -71,12 +73,23 @@ const isInQuietTimeRange = (mission: Mission, now: Date): boolean => {
   return currentHour >= quietTimeStartHour || currentHour < quietTimeEndHour;
 };
 
+const isSameLocalDay = (timeA: number, timeB: number): boolean => {
+  const a = new Date(timeA);
+  const b = new Date(timeB);
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+};
+
 export const useMapStore = create<MapState>((set, get) => ({
   boards: initialBoards,
   selectedBoard: null,
   viewModalVisible: false,
   searchQuery: "",
   participatedActivities: [],
+  repeatVisitProgressByMissionId: {},
   myActivitiesModalVisible: false,
 
   setSelectedBoard: (selectedBoard) => set({ selectedBoard }),
@@ -120,6 +133,69 @@ export const useMapStore = create<MapState>((set, get) => ({
 
     set((state) => ({ participatedActivities: [newActivity, ...state.participatedActivities] }));
     Alert.alert("미션 완료", `${mission.rewardCoins} 코인을 획득했어요.`);
+  },
+
+  certifyRepeatVisitMission: (board, mission, currentCoordinate) => {
+    if (mission.type !== "repeat_visit_stamp") return;
+
+    const coordinate = getCoordinateNearBoardOrAlert(currentCoordinate, board);
+    if (!coordinate) return;
+
+    const now = Date.now();
+    const stampGoalCount = mission.stampGoalCount ?? 5;
+    const { repeatVisitProgressByMissionId } = get();
+    const currentProgress = repeatVisitProgressByMissionId[mission.id] ?? {
+      boardId: board.id,
+      missionId: mission.id,
+      currentStampCount: 0,
+      completedRounds: 0,
+    };
+
+    if (currentProgress.lastStampedAt && isSameLocalDay(currentProgress.lastStampedAt, now)) {
+      Alert.alert("오늘은 이미 인증 완료", "반복 방문 스탬프는 하루에 1번만 적립할 수 있어요.");
+      return;
+    }
+
+    const nextStampCount = currentProgress.currentStampCount + 1;
+    const isCardCompleted = nextStampCount >= stampGoalCount;
+    const updatedProgress: RepeatVisitProgress = {
+      ...currentProgress,
+      currentStampCount: isCardCompleted ? 0 : nextStampCount,
+      completedRounds: currentProgress.completedRounds + (isCardCompleted ? 1 : 0),
+      lastStampedAt: now,
+    };
+
+    const newActivity: ParticipatedActivity = {
+      id: `${mission.id}-stamp-${now}`,
+      boardId: board.id,
+      boardTitle: board.title,
+      missionId: mission.id,
+      missionType: mission.type,
+      missionTitle: isCardCompleted
+        ? `${mission.title} 카드 완성`
+        : `${mission.title} 스탬프 ${nextStampCount}/${stampGoalCount}`,
+      rewardCoins: isCardCompleted ? mission.rewardCoins : 0,
+      status: "completed",
+      startedAt: now,
+      completedAt: now,
+      startCoordinate: coordinate,
+      endCoordinate: coordinate,
+    };
+
+    set((state) => ({
+      repeatVisitProgressByMissionId: {
+        ...state.repeatVisitProgressByMissionId,
+        [mission.id]: updatedProgress,
+      },
+      participatedActivities: [newActivity, ...state.participatedActivities],
+    }));
+
+    if (isCardCompleted) {
+      Alert.alert("스탬프 카드 완성", `${mission.rewardCoins} 코인을 획득했어요.`);
+      return;
+    }
+
+    Alert.alert("스탬프 적립 완료", `${nextStampCount}/${stampGoalCount}개를 적립했어요.`);
   },
 
   startStayMission: (board, mission, currentCoordinate) => {

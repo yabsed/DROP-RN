@@ -84,6 +84,29 @@ export default function MapScreen() {
     );
   };
 
+  const handleFocusBoardFromActivity = (boardId: string) => {
+    const board = boards.find((item) => item.id === boardId);
+    if (!board) {
+      Alert.alert("가게 찾기 실패", "해당 활동의 가게 정보를 찾지 못했어요.");
+      return;
+    }
+
+    setMyActivitiesModalVisible(false);
+    setSelectedBoard(board);
+    setViewModalVisible(false);
+
+    const { latitudeDelta, longitudeDelta } = mapRegionRef.current;
+    mapRef.current?.animateToRegion(
+      {
+        latitude: board.coordinate.latitude,
+        longitude: board.coordinate.longitude,
+        latitudeDelta,
+        longitudeDelta,
+      },
+      500,
+    );
+  };
+
   const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: Array<ViewToken<Board>> }) => {
     const first = viewableItems[0]?.item;
     if (!first) return;
@@ -186,7 +209,7 @@ export default function MapScreen() {
         currentCoordinate={currentCoordinate}
       />
 
-      <MyActivitiesModal />
+      <MyActivitiesModal onFocusBoard={handleFocusBoardFromActivity} />
     </View>
   );
 }

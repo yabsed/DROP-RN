@@ -16,6 +16,8 @@ type BoardSeed = {
   stayMinutes: number;
   visitReward: number;
   stayReward: number;
+  stampGoalCount?: number;
+  stampReward?: number;
 };
 
 const parseKoreanTimeTokenToHour = (token: string): number => {
@@ -409,6 +411,8 @@ const seongsuBoards: Board[] = boardSeeds.map((seed, index): Board => {
   const latitude = BASE_COORDINATE.latitude + seed.latitudeOffset;
   const longitude = BASE_COORDINATE.longitude + seed.longitudeOffset;
   const quietTimeRange = parseQuietTimeRange(seed.quietTimeLabel);
+  const stampGoalCount = seed.stampGoalCount ?? 5;
+  const stampReward = seed.stampReward ?? Math.max(seed.stayReward + 8, 30);
 
   return {
     id: seed.id,
@@ -435,6 +439,14 @@ const seongsuBoards: Board[] = boardSeeds.map((seed, index): Board => {
         description: `체류 시작/종료 시 GPS를 기록해 ${seed.stayMinutes}분 이상 체류를 검증합니다.`,
         rewardCoins: seed.stayReward,
         minDurationMinutes: seed.stayMinutes,
+      },
+      {
+        id: `${seed.id}-m3`,
+        type: "repeat_visit_stamp",
+        title: `반복 방문 스탬프 (${stampGoalCount}회)`,
+        description: `하루 1회 방문 인증으로 스탬프를 모으고 ${stampGoalCount}개를 채우면 보상을 받아요.`,
+        rewardCoins: stampReward,
+        stampGoalCount,
       },
     ],
   };
@@ -467,6 +479,14 @@ const legacyBoards: Board[] = [
         rewardCoins: 35,
         minDurationMinutes: 30,
       },
+      {
+        id: "legacy-b1-m3",
+        type: "repeat_visit_stamp",
+        title: "반복 방문 스탬프 (5회)",
+        description: "하루 1회 방문 인증으로 스탬프를 모아 5개를 채우면 보상이 지급돼요.",
+        rewardCoins: 40,
+        stampGoalCount: 5,
+      },
     ],
   },
   {
@@ -494,6 +514,14 @@ const legacyBoards: Board[] = [
         description: "시작/종료 시점 GPS를 기록해 20분 이상 체류를 검증합니다.",
         rewardCoins: 24,
         minDurationMinutes: 20,
+      },
+      {
+        id: "legacy-b2-m3",
+        type: "repeat_visit_stamp",
+        title: "반복 방문 스탬프 (5회)",
+        description: "하루 1회 방문 인증으로 스탬프를 모아 5개를 채우면 보상이 지급돼요.",
+        rewardCoins: 32,
+        stampGoalCount: 5,
       },
     ],
   },
@@ -523,6 +551,14 @@ const legacyBoards: Board[] = [
         rewardCoins: 42,
         minDurationMinutes: 40,
       },
+      {
+        id: "legacy-b3-m3",
+        type: "repeat_visit_stamp",
+        title: "반복 방문 스탬프 (5회)",
+        description: "하루 1회 방문 인증으로 스탬프를 모아 5개를 채우면 보상이 지급돼요.",
+        rewardCoins: 45,
+        stampGoalCount: 5,
+      },
     ],
   },
   {
@@ -550,6 +586,14 @@ const legacyBoards: Board[] = [
         description: "체류 시작/종료 버튼으로 25분 이상 체류를 인증하세요.",
         rewardCoins: 28,
         minDurationMinutes: 25,
+      },
+      {
+        id: "legacy-b4-m3",
+        type: "repeat_visit_stamp",
+        title: "반복 방문 스탬프 (5회)",
+        description: "하루 1회 방문 인증으로 스탬프를 모아 5개를 채우면 보상이 지급돼요.",
+        rewardCoins: 36,
+        stampGoalCount: 5,
       },
     ],
   },

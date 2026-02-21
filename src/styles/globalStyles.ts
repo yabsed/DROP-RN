@@ -1,6 +1,8 @@
-import { Dimensions, StyleSheet } from "react-native";
+import { Dimensions, Platform, StyleSheet } from "react-native";
 
 const screenWidth = Dimensions.get("window").width;
+const actionButtonBottom = Platform.OS === "android" ? 76 : 30;
+const locationButtonBottom = actionButtonBottom + 58;
 
 export const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F8F9FA", justifyContent: "center", alignItems: "center" },
@@ -133,31 +135,43 @@ export const styles = StyleSheet.create({
   myLocationButton: {
     position: "absolute",
     right: 30,
-    bottom: 88,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    bottom: locationButtonBottom,
+    width: 116,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#d7e6ff",
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,
+    paddingHorizontal: 12,
     zIndex: 10,
+  },
+  myLocationButtonText: {
+    color: "#0d6efd",
+    fontWeight: "800",
+    fontSize: 12,
+    marginLeft: 6,
+    letterSpacing: 0,
   },
   myActivitiesButton: {
     position: "absolute",
     right: 30,
-    bottom: 30,
+    bottom: actionButtonBottom,
+    width: 116,
     height: 44,
     borderRadius: 22,
     backgroundColor: "#007BFF",
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
@@ -168,9 +182,9 @@ export const styles = StyleSheet.create({
   myActivitiesButtonText: {
     color: "white",
     fontWeight: "800",
-    fontSize: 13,
+    fontSize: 12,
     marginLeft: 6,
-    letterSpacing: 0.4,
+    letterSpacing: 0,
   },
   photoButton: {
     backgroundColor: "#E9ECEF",

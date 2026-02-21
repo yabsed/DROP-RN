@@ -207,6 +207,32 @@ export const ViewPostModal = ({
                     contentContainerStyle={styles.missionListContent}
                     showsVerticalScrollIndicator={false}
                   >
+                    {item.missions.map((mission) => (
+                      <View key={mission.id} style={styles.missionCard}>
+                        <View style={styles.missionTitleRow}>
+                          <Text style={styles.missionEmoji}>{getMissionTypeEmoji(mission.type)}</Text>
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.missionTitle}>{mission.title}</Text>
+                            <Text style={styles.missionTypeText}>{getMissionTypeText(mission.type)}</Text>
+                          </View>
+                          <Text style={styles.missionRewardText}>+{mission.rewardCoins}</Text>
+                        </View>
+
+                        <Text style={styles.missionDescription}>{mission.description}</Text>
+
+                        {mission.type === "stay_duration" && mission.minDurationMinutes ? (
+                          <Text style={styles.missionRuleText}>필수 체류 시간: {mission.minDurationMinutes}분</Text>
+                        ) : null}
+                        {mission.type === "repeat_visit_stamp" && mission.stampGoalCount ? (
+                          <Text style={styles.missionRuleText}>
+                            목표 스탬프: {mission.stampGoalCount}개 (하루 1회 인증)
+                          </Text>
+                        ) : null}
+
+                        <View style={styles.missionActionContainer}>{renderMissionAction(item, mission)}</View>
+                      </View>
+                    ))}
+
                     {(() => {
                       const boardActivities = [...participatedActivities]
                         .filter((activity) => activity.boardId === item.id)
@@ -234,32 +260,6 @@ export const ViewPostModal = ({
                         </View>
                       );
                     })()}
-
-                    {item.missions.map((mission) => (
-                      <View key={mission.id} style={styles.missionCard}>
-                        <View style={styles.missionTitleRow}>
-                          <Text style={styles.missionEmoji}>{getMissionTypeEmoji(mission.type)}</Text>
-                          <View style={{ flex: 1 }}>
-                            <Text style={styles.missionTitle}>{mission.title}</Text>
-                            <Text style={styles.missionTypeText}>{getMissionTypeText(mission.type)}</Text>
-                          </View>
-                          <Text style={styles.missionRewardText}>+{mission.rewardCoins}</Text>
-                        </View>
-
-                        <Text style={styles.missionDescription}>{mission.description}</Text>
-
-                        {mission.type === "stay_duration" && mission.minDurationMinutes ? (
-                          <Text style={styles.missionRuleText}>필수 체류 시간: {mission.minDurationMinutes}분</Text>
-                        ) : null}
-                        {mission.type === "repeat_visit_stamp" && mission.stampGoalCount ? (
-                          <Text style={styles.missionRuleText}>
-                            목표 스탬프: {mission.stampGoalCount}개 (하루 1회 인증)
-                          </Text>
-                        ) : null}
-
-                        <View style={styles.missionActionContainer}>{renderMissionAction(item, mission)}</View>
-                      </View>
-                    ))}
                   </ScrollView>
                 </View>
               </View>

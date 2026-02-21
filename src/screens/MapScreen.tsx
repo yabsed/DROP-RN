@@ -203,12 +203,13 @@ export default function MapScreen() {
           );
         }}
       >
-        <Ionicons name="locate" size={22} color="#0d6efd" />
+        <Ionicons name="locate" size={18} color="#0d6efd" />
+        <Text style={styles.myLocationButtonText}>내 위치</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.myActivitiesButton} onPress={openParticipatedStoreList}>
         <Ionicons name="person-circle" size={18} color="white" />
-        <Text style={styles.myActivitiesButtonText}>MY</Text>
+        <Text style={styles.myActivitiesButtonText}>참여 기록</Text>
       </TouchableOpacity>
 
       <ViewPostModal

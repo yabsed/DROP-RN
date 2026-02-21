@@ -115,6 +115,90 @@ const treasureTargets: TreasureTarget[] = [
 const getReceiptTarget = (index: number): ReceiptTarget => receiptTargets[index % receiptTargets.length];
 const getTreasureTarget = (index: number): TreasureTarget => treasureTargets[index % treasureTargets.length];
 const formatWon = (amount: number): string => `${amount.toLocaleString("ko-KR")}원`;
+const NORTH_TEST_SPOT_OFFSET = { latitudeOffset: 0.000372, longitudeOffset: 0.000162 };
+
+const dayQuarterQuietTimeLabels = [
+  "오전 12시~오전 3시",
+  "오전 3시~오전 6시",
+  "오전 6시~오전 9시",
+  "오전 9시~오후 12시",
+  "오후 12시~오후 3시",
+  "오후 3시~오후 6시",
+  "오후 6시~오후 9시",
+  "오후 9시~오전 12시",
+] as const;
+
+const northNeighborhoodStories = [
+  {
+    emoji: "☕",
+    title: "자정 라이트 카페",
+    description: "자정 시간대에도 조용히 머무를 수 있는 북측 심야 카페.",
+  },
+  {
+    emoji: "🌙",
+    title: "새벽 등대 티하우스",
+    description: "새벽 이동 동선을 겨냥해 이른 인증 미션을 운영하는 티하우스.",
+  },
+  {
+    emoji: "☕",
+    title: "아침 첫잔 로스터리",
+    description: "출근 전 방문 고객을 위한 오전 인증 미션이 쉬운 로스터리.",
+  },
+  {
+    emoji: "🥯",
+    title: "오전 브런치 스테이션",
+    description: "오전 시간대 좌석 여유를 활용해 체류 미션을 운영하는 브런치 스팟.",
+  },
+  {
+    emoji: "🥐",
+    title: "정오 베이크룸",
+    description: "점심 직후 포장 수요가 빠진 시간에 방문 인증을 유도하는 베이커리.",
+  },
+  {
+    emoji: "🍜",
+    title: "오후 골목 누들바",
+    description: "오후 브레이크 타임의 여유 좌석을 활용해 체류 미션을 운영하는 누들바.",
+  },
+  {
+    emoji: "🍷",
+    title: "저녁 문라이트 와인바",
+    description: "저녁 피크 직전 시간에 손님 분산형 미션을 진행하는 와인바.",
+  },
+  {
+    emoji: "🌃",
+    title: "야간 리버사이드 라운지",
+    description: "늦은 밤 시간대 인증을 위한 조용한 좌석 중심 라운지.",
+  },
+] as const;
+
+const northNeighborhoodOffsets = [
+  { latitudeOffset: 0.000014, longitudeOffset: -0.000012 },
+  { latitudeOffset: 0.000022, longitudeOffset: 0.00001 },
+  { latitudeOffset: -0.000012, longitudeOffset: -0.00002 },
+  { latitudeOffset: -0.00002, longitudeOffset: 0.000016 },
+  { latitudeOffset: 0.000006, longitudeOffset: 0.000024 },
+  { latitudeOffset: -0.000014, longitudeOffset: 0.000022 },
+  { latitudeOffset: 0.000019, longitudeOffset: -0.000006 },
+  { latitudeOffset: -0.000006, longitudeOffset: -0.000024 },
+] as const;
+
+const northTestSpotSeeds: BoardSeed[] = dayQuarterQuietTimeLabels.map((quietTimeLabel, index) => {
+  const story = northNeighborhoodStories[index];
+  const offset = northNeighborhoodOffsets[index];
+
+  return {
+    id: `b${30 + index}`,
+    emoji: story.emoji,
+    title: story.title,
+    description: story.description,
+    latitudeOffset: NORTH_TEST_SPOT_OFFSET.latitudeOffset + offset.latitudeOffset,
+    longitudeOffset: NORTH_TEST_SPOT_OFFSET.longitudeOffset + offset.longitudeOffset,
+    quietTimeLabel,
+    stayMinutes: 2,
+    visitReward: 10 + index,
+    stayReward: 24 + index * 2,
+  };
+});
 
 const boardSeeds: BoardSeed[] = [
   {
@@ -408,8 +492,8 @@ const boardSeeds: BoardSeed[] = [
   {
     id: "b25",
     emoji: "🧭",
-    title: "아차산로17길 기준점 라운지",
-    description: "요청 좌표 기준 초근접 GPS 테스트용 더미.",
+    title: "아차산17길 로컬 라운지",
+    description: "북측 생활권 유입을 위한 근거리 방문/체류 인증 라운지.",
     latitudeOffset: 0.000328,
     longitudeOffset: 0.000138,
     quietTimeLabel: "오후 1시~3시",
@@ -420,8 +504,8 @@ const boardSeeds: BoardSeed[] = [
   {
     id: "b26",
     emoji: "📍",
-    title: "기준점 북측 테스트 스팟",
-    description: "기준점에서 북동쪽으로 몇 m 떨어진 검증 지점.",
+    title: "북측 리버뷰 카페",
+    description: "강변 산책 동선 고객을 위한 북측 대표 방문 인증 카페.",
     latitudeOffset: 0.000372,
     longitudeOffset: 0.000162,
     quietTimeLabel: "오후 2시~4시",
@@ -432,8 +516,8 @@ const boardSeeds: BoardSeed[] = [
   {
     id: "b27",
     emoji: "📌",
-    title: "기준점 남측 테스트 스팟",
-    description: "기준점에서 남서쪽으로 몇 m 떨어진 검증 지점.",
+    title: "남측 골목 베이크샵",
+    description: "퇴근 전 짧은 체류 고객을 노린 남측 골목형 베이커리.",
     latitudeOffset: 0.000286,
     longitudeOffset: 0.000094,
     quietTimeLabel: "오후 3시~5시",
@@ -444,8 +528,8 @@ const boardSeeds: BoardSeed[] = [
   {
     id: "b28",
     emoji: "🏁",
-    title: "아차산로 GPS 체크포인트 A",
-    description: "근접 반경 테스트를 위한 초근거리 체크포인트.",
+    title: "광나루 코너 편집숍",
+    description: "짧은 체류 고객 대상 오프피크 방문 리워드를 운영하는 편집숍.",
     latitudeOffset: 0.000341,
     longitudeOffset: 0.000089,
     quietTimeLabel: "오전 11시~오후 1시",
@@ -456,8 +540,8 @@ const boardSeeds: BoardSeed[] = [
   {
     id: "b29",
     emoji: "🛰️",
-    title: "아차산로 GPS 체크포인트 B",
-    description: "기준 좌표 인접 구간 체류/방문 미션 테스트용.",
+    title: "강변 스탠드 커피",
+    description: "저녁 전 방문 분산을 위해 인증 미션을 운영하는 스탠드형 카페.",
     latitudeOffset: 0.000301,
     longitudeOffset: 0.000187,
     quietTimeLabel: "오후 4시~6시",
@@ -465,6 +549,7 @@ const boardSeeds: BoardSeed[] = [
     visitReward: 13,
     stayReward: 30,
   },
+  ...northTestSpotSeeds,
 ];
 
 const seongsuBoards: Board[] = boardSeeds.map((seed, index): Board => {

@@ -740,6 +740,31 @@ export const styles = StyleSheet.create({
     width: "100%",
     marginBottom: 12,
   },
+  coinOverviewCard: {
+    width: "100%",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#cfe0ff",
+    backgroundColor: "#eef4ff",
+    padding: 10,
+    marginBottom: 10,
+  },
+  coinOverviewTitle: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#2d4e8a",
+  },
+  coinOverviewTotal: {
+    marginTop: 4,
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#0d4ed1",
+  },
+  coinOverviewMeta: {
+    marginTop: 2,
+    fontSize: 12,
+    color: "#4b5e82",
+  },
   activityItem: {
     padding: 12,
     backgroundColor: "#f7f9fc",
@@ -852,6 +877,10 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+  participatedStoreActivityRight: {
+    alignItems: "flex-end",
+    marginLeft: 8,
+  },
   participatedStoreActivityTitle: {
     flex: 1,
     marginRight: 8,
@@ -859,10 +888,19 @@ export const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#1f2b3d",
   },
+  participatedStoreActivityReward: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#0a9d58",
+  },
+  participatedStoreActivityRewardStamp: {
+    color: "#5f6d85",
+  },
   participatedStoreActivityStatus: {
     fontSize: 11,
     fontWeight: "700",
     color: "#2c5fb3",
+    marginTop: 2,
   },
   participatedStoreActivityMeta: {
     marginTop: 4,

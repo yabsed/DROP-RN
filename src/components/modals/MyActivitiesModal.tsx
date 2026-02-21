@@ -22,14 +22,14 @@ type ParticipatedStoreSummary = {
   stampCompletedRounds: number;
 };
 
-const formatActivityMeta = (activity: ParticipatedActivity): string => {
-  const timeText = new Date(activity.startedAt).toLocaleString("ko-KR");
-  const rewardText = activity.rewardCoins > 0 ? `+${activity.rewardCoins} 코인` : "스탬프 적립";
-  return `${timeText} | ${rewardText}`;
-};
+const formatActivityMeta = (activity: ParticipatedActivity): string =>
+  new Date(activity.startedAt).toLocaleString("ko-KR");
 
 const getActivityStatusText = (activity: ParticipatedActivity): string =>
   activity.status === "completed" ? "완료" : "진행중";
+
+const getActivityRewardText = (activity: ParticipatedActivity): string =>
+  activity.rewardCoins > 0 ? `+${activity.rewardCoins} 코인!` : "스탬프 적립";
 
 export const MyActivitiesModal = ({ onSelectStore }: Props) => {
   const {
@@ -78,6 +78,9 @@ export const MyActivitiesModal = ({ onSelectStore }: Props) => {
     return acc;
   }, []);
   participatedStores.sort((a, b) => b.lastActivityAt - a.lastActivityAt);
+  const totalEarnedCoins = activities.reduce((sum, activity) => sum + activity.rewardCoins, 0);
+  const totalStoreCount = participatedStores.length;
+  const totalActivityCount = activities.length;
 
   return (
     <Modal
@@ -89,6 +92,15 @@ export const MyActivitiesModal = ({ onSelectStore }: Props) => {
       <View style={styles.modalContainer}>
         <View style={styles.activitiesModalView}>
           <Text style={styles.modalTitle}>내가 참여한 가게</Text>
+          {participatedStores.length > 0 ? (
+            <View style={styles.coinOverviewCard}>
+              <Text style={styles.coinOverviewTitle}>코인 획득 현황</Text>
+              <Text style={styles.coinOverviewTotal}>총 +{totalEarnedCoins} 코인</Text>
+              <Text style={styles.coinOverviewMeta}>
+                참여 가게 {totalStoreCount}곳 | 참여 활동 {totalActivityCount}회
+              </Text>
+            </View>
+          ) : null}
 
           {participatedStores.length === 0 ? (
             <Text style={styles.noCommentsText}>아직 활동에 참여한 가게가 없습니다.</Text>
@@ -135,7 +147,17 @@ export const MyActivitiesModal = ({ onSelectStore }: Props) => {
                       <View key={activity.id} style={styles.participatedStoreActivityItem}>
                         <View style={styles.participatedStoreActivityHeader}>
                           <Text style={styles.participatedStoreActivityTitle}>{activity.missionTitle}</Text>
-                          <Text style={styles.participatedStoreActivityStatus}>{getActivityStatusText(activity)}</Text>
+                          <View style={styles.participatedStoreActivityRight}>
+                            <Text
+                              style={[
+                                styles.participatedStoreActivityReward,
+                                activity.rewardCoins === 0 ? styles.participatedStoreActivityRewardStamp : null,
+                              ]}
+                            >
+                              {getActivityRewardText(activity)}
+                            </Text>
+                            <Text style={styles.participatedStoreActivityStatus}>{getActivityStatusText(activity)}</Text>
+                          </View>
                         </View>
                         <Text style={styles.participatedStoreActivityMeta}>{formatActivityMeta(activity)}</Text>
                       </View>

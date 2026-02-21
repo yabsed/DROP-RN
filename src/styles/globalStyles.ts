@@ -133,7 +133,7 @@ export const styles = StyleSheet.create({
   myLocationButton: {
     position: "absolute",
     right: 30,
-    bottom: 105,
+    bottom: 88,
     width: 60,
     height: 60,
     borderRadius: 30,
@@ -151,18 +151,26 @@ export const styles = StyleSheet.create({
     position: "absolute",
     right: 30,
     bottom: 30,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: "#007BFF",
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 14,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,
     zIndex: 10,
+  },
+  myActivitiesButtonText: {
+    color: "white",
+    fontWeight: "800",
+    fontSize: 13,
+    marginLeft: 6,
+    letterSpacing: 0.4,
   },
   photoButton: {
     backgroundColor: "#E9ECEF",
@@ -332,20 +340,6 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
     marginLeft: 4,
   },
-  inlineActivitiesButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 2,
-    paddingHorizontal: 8,
-    borderRadius: 10,
-    backgroundColor: "#eef5ff",
-  },
-  inlineActivitiesButtonText: {
-    fontSize: 12,
-    color: "#0d6efd",
-    fontWeight: "700",
-    marginLeft: 4,
-  },
   swipeHintContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -456,6 +450,54 @@ export const styles = StyleSheet.create({
   },
   missionListContent: {
     paddingBottom: 8,
+  },
+  boardActivitySection: {
+    backgroundColor: "#f3f7ff",
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#dbe7ff",
+  },
+  boardActivitySectionTitle: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#1f3f75",
+    marginBottom: 8,
+  },
+  boardActivityEmptyText: {
+    fontSize: 12,
+    color: "#6a778f",
+  },
+  boardActivityItem: {
+    backgroundColor: "white",
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#e1e8f7",
+  },
+  boardActivityHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  boardActivityTitle: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#1f2b3d",
+    marginRight: 8,
+  },
+  boardActivityStatus: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#335ea8",
+  },
+  boardActivityMeta: {
+    fontSize: 11,
+    color: "#5f6d85",
+    marginTop: 4,
   },
   missionCard: {
     backgroundColor: "#f8f9ff",
@@ -603,32 +645,33 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#e8edf5",
   },
+  participatedStoreHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  participatedStoreEmoji: {
+    fontSize: 20,
+    marginRight: 8,
+  },
   participatedStoreTitle: {
     fontSize: 14,
     fontWeight: "700",
     color: "#222",
-    marginBottom: 4,
   },
   participatedStoreMeta: {
     fontSize: 12,
     color: "#555",
     marginTop: 2,
   },
-  participatedStoreActionRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    marginTop: 10,
-  },
-  participatedStoreButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: "#eaf2ff",
-  },
-  participatedStoreButtonText: {
+  participatedStoreStampMeta: {
     fontSize: 12,
+    color: "#1f4f9a",
     fontWeight: "700",
-    color: "#0d6efd",
+    marginTop: 2,
+  },
+  participatedStoreStampWrap: {
+    marginTop: 6,
   },
 });
 

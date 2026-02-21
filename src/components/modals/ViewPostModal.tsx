@@ -15,7 +15,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../../styles/globalStyles";
 import { useMapStore } from "../../store/useMapStore";
-import { Board, Coordinate, Mission, MissionType } from "../../types/map";
+import { ActivityStatus, Board, Coordinate, Mission, MissionType } from "../../types/map";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -25,7 +25,6 @@ type Props = {
   onViewableItemsChanged: (info: { viewableItems: Array<ViewToken<Board>> }) => void;
   viewabilityConfig: ViewabilityConfig;
   currentCoordinate: Coordinate | null;
-  onOpenBoardActivities: (board: Board) => void;
 };
 
 const getMissionTypeText = (missionType: MissionType): string => {
@@ -40,13 +39,17 @@ const getMissionTypeEmoji = (missionType: MissionType): string => {
   return "⏱️";
 };
 
+const getActivityStatusLabel = (status: ActivityStatus): string => {
+  if (status === "completed") return "완료";
+  return "진행중";
+};
+
 export const ViewPostModal = ({
   viewableBoards,
   safeInitialIndex,
   onViewableItemsChanged,
   viewabilityConfig,
   currentCoordinate,
-  onOpenBoardActivities,
 }: Props) => {
   const {
     viewModalVisible,
@@ -188,14 +191,7 @@ export const ViewPostModal = ({
                       <Ionicons name="arrow-back" size={16} color="#8b8b8b" />
                       <Text style={styles.backButtonInlineText}>뒤로가기</Text>
                     </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={styles.inlineActivitiesButton}
-                      onPress={() => onOpenBoardActivities(item)}
-                    >
-                      <Ionicons name="list" size={14} color="#0d6efd" />
-                      <Text style={styles.inlineActivitiesButtonText}>내 활동</Text>
-                    </TouchableOpacity>
+                    <View style={styles.topBarSpacer} />
                   </View>
 
                   <View style={styles.boardHeader}>
@@ -211,6 +207,34 @@ export const ViewPostModal = ({
                     contentContainerStyle={styles.missionListContent}
                     showsVerticalScrollIndicator={false}
                   >
+                    {(() => {
+                      const boardActivities = [...participatedActivities]
+                        .filter((activity) => activity.boardId === item.id)
+                        .sort((a, b) => b.startedAt - a.startedAt);
+
+                      return (
+                        <View style={styles.boardActivitySection}>
+                          <Text style={styles.boardActivitySectionTitle}>MY 활동 내역</Text>
+                          {boardActivities.length === 0 ? (
+                            <Text style={styles.boardActivityEmptyText}>아직 이 가게에서 참여한 활동이 없습니다.</Text>
+                          ) : (
+                            boardActivities.map((activity) => (
+                              <View key={activity.id} style={styles.boardActivityItem}>
+                                <View style={styles.boardActivityHeaderRow}>
+                                  <Text style={styles.boardActivityTitle}>{activity.missionTitle}</Text>
+                                  <Text style={styles.boardActivityStatus}>{getActivityStatusLabel(activity.status)}</Text>
+                                </View>
+                                <Text style={styles.boardActivityMeta}>
+                                  {new Date(activity.startedAt).toLocaleString()} ·{" "}
+                                  {activity.rewardCoins > 0 ? `+${activity.rewardCoins} 코인` : "스탬프 적립"}
+                                </Text>
+                              </View>
+                            ))
+                          )}
+                        </View>
+                      );
+                    })()}
+
                     {item.missions.map((mission) => (
                       <View key={mission.id} style={styles.missionCard}>
                         <View style={styles.missionTitleRow}>

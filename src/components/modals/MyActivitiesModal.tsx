@@ -93,32 +93,29 @@ export const MyActivitiesModal = ({ onSelectStore }: Props) => {
         <View style={styles.activitiesModalView}>
           <Text style={styles.modalTitle}>내가 참여한 가게</Text>
           {participatedStores.length > 0 ? (
-            <View style={styles.coinOverviewCard}>
-              <Text style={styles.coinOverviewTitle}>코인 획득 현황</Text>
-              <Text style={styles.coinOverviewTotal}>총 +{totalEarnedCoins} 코인</Text>
-              <Text style={styles.coinOverviewMeta}>
-                참여 가게 {totalStoreCount}곳 | 참여 활동 {totalActivityCount}회
-              </Text>
-            </View>
-          ) : null}
-
-          {participatedStores.length === 0 ? (
-            <Text style={styles.noCommentsText}>아직 활동에 참여한 가게가 없습니다.</Text>
-          ) : (
             <FlatList
               data={participatedStores}
               keyExtractor={(item) => item.boardId}
               style={styles.activitiesList}
+              ListHeaderComponent={
+                <View style={styles.coinOverviewCard}>
+                  <Text style={styles.coinOverviewTitle}>코인 획득 현황</Text>
+                  <Text style={styles.coinOverviewTotal}>총 +{totalEarnedCoins} 코인</Text>
+                  <Text style={styles.coinOverviewMeta}>
+                    참여 가게 {totalStoreCount}곳 | 참여 활동 {totalActivityCount}회
+                  </Text>
+                </View>
+              }
               renderItem={({ item }) => (
-                <TouchableOpacity
-                  activeOpacity={0.82}
-                  style={styles.participatedStoreItem}
-                  onPress={() => onSelectStore(item.boardId)}
-                >
-                  <View style={styles.participatedStoreHeader}>
+                <View style={styles.participatedStoreItem}>
+                  <TouchableOpacity
+                    activeOpacity={0.75}
+                    style={styles.participatedStoreHeader}
+                    onPress={() => onSelectStore(item.boardId)}
+                  >
                     <Text style={styles.participatedStoreEmoji}>{item.boardEmoji}</Text>
                     <Text style={styles.participatedStoreTitle}>{item.boardTitle}</Text>
-                  </View>
+                  </TouchableOpacity>
                   <Text style={styles.participatedStoreDescription}>{item.boardDescription}</Text>
                   <Text style={styles.participatedStoreMeta}>참여 활동 수: {item.activityCount}회</Text>
                   <Text style={styles.participatedStoreMeta}>누적 보상: +{item.totalEarnedCoins} 코인</Text>
@@ -168,10 +165,14 @@ export const MyActivitiesModal = ({ onSelectStore }: Props) => {
                       </Text>
                     ) : null}
                   </View>
-                </TouchableOpacity>
+                </View>
               )}
             />
-          )}
+          ) : null}
+
+          {participatedStores.length === 0 ? (
+            <Text style={styles.noCommentsText}>아직 활동에 참여한 가게가 없습니다.</Text>
+          ) : null}
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => setMyActivitiesModalVisible(false)}>

@@ -96,6 +96,16 @@ const getActivityStatusLabel = (status: ActivityStatus): string => {
   return "진행중";
 };
 
+const formatRemainingDuration = (remainingMillis: number): string => {
+  const remainingSeconds = Math.max(Math.ceil(remainingMillis / 1000), 0);
+  const minutes = Math.floor(remainingSeconds / 60);
+  const seconds = remainingSeconds % 60;
+
+  if (minutes <= 0) return `${seconds}초`;
+  if (seconds <= 0) return `${minutes}분`;
+  return `${minutes}분 ${seconds}초`;
+};
+
 const toRadians = (degree: number): number => (degree * Math.PI) / 180;
 
 const getDistanceMeters = (from: Coordinate, to: Coordinate): number => {
@@ -348,14 +358,21 @@ export const ViewPostModal = ({
     }
 
     if (inProgressActivity) {
-      const elapsedMinutes = Math.floor((Date.now() - inProgressActivity.startedAt) / 60000);
+      const elapsedMillis = Math.max(Date.now() - inProgressActivity.startedAt, 0);
+      const elapsedMinutes = Math.floor(elapsedMillis / 60000);
       const requiredMinutes = inProgressActivity.requiredMinutes ?? mission.minDurationMinutes ?? 0;
+      const remainingMillis = Math.max(requiredMinutes * 60 * 1000 - elapsedMillis, 0);
 
       return (
         <View style={styles.missionProgressContainer}>
           <Text style={styles.missionProgressText}>
             진행 중 {elapsedMinutes}분 / {requiredMinutes}분
           </Text>
+          {requiredMinutes > 0 ? (
+            <Text style={styles.missionRuleText}>
+              {remainingMillis > 0 ? `남은 시간 약 ${formatRemainingDuration(remainingMillis)}` : "최소 체류 시간 충족"}
+            </Text>
+          ) : null}
           <TouchableOpacity
             style={[styles.button, styles.saveButton]}
             onPress={() => {

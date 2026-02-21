@@ -112,12 +112,12 @@ const getAccessTokenOrAlert = (): string | null => {
   return null;
 };
 
-const getAttemptTimestamp = (attempt: MissionAttemptResponse): number =>
-  toEpochMillis(attempt.checkinAt) ?? toEpochMillis(attempt.checkoutAt) ?? Date.now();
+const getAttemptTimestamp = (attempt: MissionAttemptResponse): number | undefined =>
+  toEpochMillis(attempt.checkinAt) ?? toEpochMillis(attempt.checkoutAt);
 
 const sortAttemptsByLatest = (attempts: MissionAttemptResponse[]): MissionAttemptResponse[] =>
   [...attempts].sort((a, b) => {
-    const timestampGap = getAttemptTimestamp(b) - getAttemptTimestamp(a);
+    const timestampGap = (getAttemptTimestamp(b) ?? 0) - (getAttemptTimestamp(a) ?? 0);
     if (timestampGap !== 0) return timestampGap;
     return b.attemptId - a.attemptId;
   });
@@ -176,7 +176,7 @@ const mapAttemptToParticipatedActivity = (
   if (isPending && mission.type !== "stay_duration") return null;
 
   const rewardGranted = isSuccess && (mission.type !== "repeat_visit_stamp" || hasReward(attempt.rewardId));
-  const startedAt = getAttemptTimestamp(attempt);
+  const startedAt = getAttemptTimestamp(attempt) ?? Date.now();
   const completedAt = isSuccess ? toEpochMillis(attempt.checkoutAt) ?? startedAt : undefined;
   const coordinate = options?.coordinate ?? board.coordinate;
 
@@ -735,8 +735,10 @@ export const useMapStore = create<MapState>((set, get) => ({
         return;
       }
 
-      const latestAttempt = orderedAttempts[0];
-      if (!latestAttempt || latestAttempt.status !== "PENDING") {
+      const latestPendingAttempt = orderedAttempts.find(
+        (attempt) => attempt.status === "PENDING" && toEpochMillis(attempt.checkinAt) !== undefined,
+      );
+      if (!latestPendingAttempt) {
         set((state) => ({
           participatedActivities: state.participatedActivities.filter((activity) => activity.id !== target.id),
         }));
@@ -744,20 +746,33 @@ export const useMapStore = create<MapState>((set, get) => ({
         return;
       }
 
-      const latestCheckinAt = toEpochMillis(latestAttempt.checkinAt);
+      const latestCheckinAt = toEpochMillis(latestPendingAttempt.checkinAt);
       if (latestCheckinAt === undefined) {
         Alert.alert("체류 종료 실패", "체류 시작 시간을 확인할 수 없어 종료를 진행할 수 없습니다.");
         return;
       }
 
+      const inProgressActivity = mapAttemptToParticipatedActivity(board, mission, latestPendingAttempt, {
+        coordinate: target.startCoordinate,
+      });
+      if (inProgressActivity) {
+        set((state) => ({
+          participatedActivities: upsertParticipatedActivity(state.participatedActivities, inProgressActivity),
+        }));
+      }
+
       const requiredMinutes = Math.max(target.requiredMinutes ?? mission.minDurationMinutes ?? 0, 0);
       if (requiredMinutes > 0) {
         const requiredMillis = requiredMinutes * 60 * 1000;
-        const elapsedMillis = Date.now() - latestCheckinAt;
+        const elapsedMillis = Math.max(Date.now() - latestCheckinAt, 0);
         const remainingMillis = requiredMillis - elapsedMillis;
 
         if (remainingMillis > 0) {
-          Alert.alert("체류 시간 부족", `아직 체류 시간이 부족해요. 약 ${formatRemainingDuration(remainingMillis)} 후에 다시 시도해주세요.`);
+          const elapsedMinutes = Math.floor(elapsedMillis / 60000);
+          Alert.alert(
+            "체류 시간 부족",
+            `현재 ${elapsedMinutes}분 체류했어요. 최소 ${requiredMinutes}분이 필요합니다.\n약 ${formatRemainingDuration(remainingMillis)} 후에 다시 시도해주세요.`,
+          );
           return;
         }
       }

@@ -15,7 +15,6 @@ import * as Location from "expo-location";
 import MapView, { Marker, Region } from "react-native-maps";
 
 import { ViewPostModal } from "../components/modals/ViewPostModal";
-import { MyActivitiesModal } from "../components/modals/MyActivitiesModal";
 import { AuthModal } from "../components/modals/AuthModal";
 import { CustomMarker } from "../components/CustomMarker";
 import { styles } from "../styles/globalStyles";
@@ -38,11 +37,9 @@ export default function MapScreen() {
     selectedBoard,
     viewModalVisible,
     searchQuery,
-    myActivitiesModalVisible,
     setSelectedBoard,
     setViewModalVisible,
     setSearchQuery,
-    setMyActivitiesModalVisible,
     refreshBoardMissionAttempts,
     handleBackNavigation,
   } = useMapStore();
@@ -119,7 +116,7 @@ export default function MapScreen() {
     const subscription = BackHandler.addEventListener("hardwareBackPress", onHardwareBackPress);
 
     return () => subscription.remove();
-  }, [authModalVisible, viewModalVisible, myActivitiesModalVisible, handleBackNavigation]);
+  }, [authModalVisible, viewModalVisible, handleBackNavigation]);
 
   useEffect(() => {
     if (!viewModalVisible || !selectedBoard || !isAuthenticated) return;
@@ -139,43 +136,6 @@ export default function MapScreen() {
       },
       500,
     );
-  };
-
-  const openBoardActivities = (board: Board) => {
-    setSearchQuery("");
-    setSelectedBoard(board);
-    setMyActivitiesModalVisible(false);
-    setViewModalVisible(true);
-
-    const { latitudeDelta, longitudeDelta } = mapRegionRef.current;
-    mapRef.current?.animateToRegion(
-      {
-        latitude: board.coordinate.latitude,
-        longitude: board.coordinate.longitude,
-        latitudeDelta,
-        longitudeDelta,
-      },
-      500,
-    );
-  };
-
-  const openParticipatedStoreList = () => {
-    if (!isAuthenticated) {
-      Alert.alert("로그인 필요", "참여 기록은 로그인 후 확인할 수 있어요.");
-      setAuthModalVisible(true);
-      return;
-    }
-    setMyActivitiesModalVisible(true);
-  };
-
-  const openBoardFromMyActivities = (boardId: string) => {
-    const board = boards.find((item) => item.id === boardId);
-    if (!board) {
-      Alert.alert("가게 찾기 실패", "해당 가게를 찾지 못했어요.");
-      return;
-    }
-
-    openBoardActivities(board);
   };
 
   const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: Array<ViewToken<Board>> }) => {
@@ -282,11 +242,6 @@ export default function MapScreen() {
         <Text style={styles.authFloatingButtonText}>{isAuthenticated ? "계정" : "인증"}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.myActivitiesButton} onPress={openParticipatedStoreList}>
-        <Ionicons name="person-circle" size={18} color="white" />
-        <Text style={styles.myActivitiesButtonText}>참여 기록</Text>
-      </TouchableOpacity>
-
       <ViewPostModal
         viewableBoards={viewableBoards}
         safeInitialIndex={safeInitialIndex}
@@ -295,7 +250,6 @@ export default function MapScreen() {
         currentCoordinate={currentCoordinate}
       />
 
-      <MyActivitiesModal onSelectStore={openBoardFromMyActivities} />
       <AuthModal visible={authModalVisible} onClose={() => setAuthModalVisible(false)} />
     </View>
   );

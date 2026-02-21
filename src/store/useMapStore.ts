@@ -21,13 +21,11 @@ type MapState = {
   participatedActivities: ParticipatedActivity[];
   repeatVisitProgressByMissionId: Record<string, RepeatVisitProgress>;
   guestbookEntriesByBoardId: Record<string, GuestbookEntry[]>;
-  myActivitiesModalVisible: boolean;
   loadBoards: (coordinate?: Coordinate | null) => Promise<void>;
   refreshBoardMissionAttempts: (board: Board) => Promise<void>;
   setSelectedBoard: (selectedBoard: Board | null) => void;
   setViewModalVisible: (viewModalVisible: boolean) => void;
   setSearchQuery: (searchQuery: string) => void;
-  setMyActivitiesModalVisible: (myActivitiesModalVisible: boolean) => void;
   certifyQuietTimeMission: (board: Board, mission: Mission, currentCoordinate: Coordinate | null) => Promise<void>;
   certifyReceiptPurchaseMission: (
     board: Board,
@@ -333,7 +331,6 @@ export const useMapStore = create<MapState>((set, get) => ({
   participatedActivities: [],
   repeatVisitProgressByMissionId: {},
   guestbookEntriesByBoardId: {},
-  myActivitiesModalVisible: false,
 
   loadBoards: async (coordinate) => {
     set({ isLoadingBoards: true, boardsLoadError: null });
@@ -420,7 +417,6 @@ export const useMapStore = create<MapState>((set, get) => ({
   setSelectedBoard: (selectedBoard) => set({ selectedBoard }),
   setViewModalVisible: (viewModalVisible) => set({ viewModalVisible }),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
-  setMyActivitiesModalVisible: (myActivitiesModalVisible) => set({ myActivitiesModalVisible }),
 
   certifyQuietTimeMission: async (board, mission, currentCoordinate) => {
     const coordinate = getCoordinateNearBoardOrAlert(currentCoordinate, board);
@@ -817,12 +813,7 @@ export const useMapStore = create<MapState>((set, get) => ({
   },
 
   handleBackNavigation: () => {
-    const { myActivitiesModalVisible, viewModalVisible } = get();
-
-    if (myActivitiesModalVisible) {
-      set({ myActivitiesModalVisible: false });
-      return true;
-    }
+    const { viewModalVisible } = get();
 
     if (viewModalVisible) {
       set({ viewModalVisible: false, selectedBoard: null });

@@ -1,4 +1,4 @@
-import { Board, Mission, QuietTimeDay } from "../types/map";
+import { Board, Coordinate, Mission, QuietTimeDay } from "../types/map";
 
 const API_BASE_URL = "http://3.107.199.19:8080";
 const DEFAULT_TREASURE_GUIDE_TEXT = "정답 이미지와 같은 장면을 촬영해 인증하세요.";
@@ -14,6 +14,7 @@ type StoreResponse = {
   lng: number;
   ownerId: number;
   businessNumber: string | null;
+  iconEmoji?: string | null;
   imageUrl: string | null;
 };
 
@@ -178,6 +179,52 @@ const getStoreEmoji = (name: string): string => {
   return "📍";
 };
 
+const isEmojiCodePoint = (codePoint: number): boolean =>
+  codePoint === 0x00a9 ||
+  codePoint === 0x00ae ||
+  (codePoint >= 0x203c && codePoint <= 0x3299) ||
+  (codePoint >= 0x1f000 && codePoint <= 0x1faff);
+
+const isEmojiComponentCodePoint = (codePoint: number): boolean =>
+  codePoint === 0x200d || // zero width joiner
+  codePoint === 0xfe0f || // variation selector-16
+  codePoint === 0xfe0e || // variation selector-15
+  codePoint === 0x20e3 || // combining enclosing keycap
+  (codePoint >= 0x1f3fb && codePoint <= 0x1f3ff); // skin tone modifiers
+
+const isKeycapBase = (char: string): boolean => char === "#" || char === "*" || /^[0-9]$/.test(char);
+
+const isEmojiLikeText = (value: string | null | undefined): value is string => {
+  const trimmed = value?.trim();
+  if (!trimmed) return false;
+
+  let hasEmojiCodePoint = false;
+  for (const char of trimmed) {
+    const codePoint = char.codePointAt(0);
+    if (!codePoint) return false;
+
+    if (isEmojiCodePoint(codePoint)) {
+      hasEmojiCodePoint = true;
+      continue;
+    }
+
+    if (isEmojiComponentCodePoint(codePoint) || isKeycapBase(char)) {
+      continue;
+    }
+
+    return false;
+  }
+
+  return hasEmojiCodePoint;
+};
+
+const resolveStoreEmoji = (store: StoreResponse): string => {
+  if (isEmojiLikeText(store.iconEmoji)) {
+    return store.iconEmoji.trim();
+  }
+  return getStoreEmoji(store.name);
+};
+
 const mapMissionDefinitionToMission = (missionDefinition: MissionDefinitionResponse): Mission => {
   const parsedConfig = parseConfigJson(missionDefinition.configJson);
 
@@ -263,7 +310,7 @@ const mapStoreToBoard = (store: StoreResponse, missionDefinitions: MissionDefini
       latitude: store.lat,
       longitude: store.lng,
     },
-    emoji: getStoreEmoji(store.name),
+    emoji: resolveStoreEmoji(store),
     title: store.name,
     description: description || "가게 설명이 아직 등록되지 않았습니다.",
     createdAt: Date.now(),
@@ -271,8 +318,23 @@ const mapStoreToBoard = (store: StoreResponse, missionDefinitions: MissionDefini
   };
 };
 
-export const listStores = async (): Promise<StoreResponse[]> =>
-  fetchJson<StoreResponse[]>(`${API_BASE_URL}/api/stores`, { method: "GET" }, "매장 목록을 불러오지 못했습니다.");
+export const listStores = async (coordinate?: Coordinate | null): Promise<StoreResponse[]> => {
+  const hasCoordinate =
+    coordinate !== null &&
+    coordinate !== undefined &&
+    Number.isFinite(coordinate.latitude) &&
+    Number.isFinite(coordinate.longitude);
+
+  const params = hasCoordinate
+    ? new URLSearchParams({
+        lat: coordinate.latitude.toString(),
+        lng: coordinate.longitude.toString(),
+      }).toString()
+    : "";
+  const url = params ? `${API_BASE_URL}/api/stores?${params}` : `${API_BASE_URL}/api/stores`;
+
+  return fetchJson<StoreResponse[]>(url, { method: "GET" }, "매장 목록을 불러오지 못했습니다.");
+};
 
 export const listStoreMissions = async (storeId: number): Promise<MissionDefinitionResponse[]> =>
   fetchJson<MissionDefinitionResponse[]>(
@@ -330,8 +392,8 @@ export const deleteStoreMission = async (storeId: number, missionId: number, tok
   }
 };
 
-export const fetchBoardsFromStoreMissions = async (): Promise<Board[]> => {
-  const stores = await listStores();
+export const fetchBoardsFromStoreMissions = async (coordinate?: Coordinate | null): Promise<Board[]> => {
+  const stores = await listStores(coordinate);
   const missionResults = await Promise.all(
     stores.map(async (store) => {
       try {

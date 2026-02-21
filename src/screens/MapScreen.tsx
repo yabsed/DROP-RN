@@ -53,40 +53,57 @@ export default function MapScreen() {
   const mapRegionRef = useRef<Region>(INITIAL_REGION);
 
   useEffect(() => {
-    void loadBoards();
-  }, [loadBoards]);
-
-  useEffect(() => {
     if (!boardsLoadError) return;
     Alert.alert("매장 데이터 안내", boardsLoadError);
   }, [boardsLoadError]);
 
   useEffect(() => {
-    const startTracking = async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert("위치 권한 필요", "위치 권한을 허용해주세요.");
-        return;
-      }
+    let isActive = true;
 
-      locationSubscription.current = await Location.watchPositionAsync(
-        {
+    const startTracking = async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert("위치 권한 필요", "위치 권한을 허용해주세요.");
+          await loadBoards();
+          return;
+        }
+
+        const initialLocation = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.High,
-          timeInterval: 2000,
-          distanceInterval: 1,
-        },
-        (loc) => {
-          setMyLocation(loc.coords);
-        },
-      );
+        });
+
+        if (!isActive) return;
+        setMyLocation(initialLocation.coords);
+        await loadBoards({
+          latitude: initialLocation.coords.latitude,
+          longitude: initialLocation.coords.longitude,
+        });
+        if (!isActive) return;
+
+        locationSubscription.current = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.High,
+            timeInterval: 2000,
+            distanceInterval: 1,
+          },
+          (loc) => {
+            setMyLocation(loc.coords);
+          },
+        );
+      } catch {
+        if (!isActive) return;
+        await loadBoards();
+      }
     };
 
     void startTracking();
 
     return () => {
+      isActive = false;
       locationSubscription.current?.remove();
     };
-  }, []);
+  }, [loadBoards]);
 
   useEffect(() => {
     if (Platform.OS !== "android") return;

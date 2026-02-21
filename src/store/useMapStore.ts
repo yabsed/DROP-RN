@@ -14,7 +14,7 @@ type MapState = {
   repeatVisitProgressByMissionId: Record<string, RepeatVisitProgress>;
   guestbookEntriesByBoardId: Record<string, GuestbookEntry[]>;
   myActivitiesModalVisible: boolean;
-  loadBoards: () => Promise<void>;
+  loadBoards: (coordinate?: Coordinate | null) => Promise<void>;
   setSelectedBoard: (selectedBoard: Board | null) => void;
   setViewModalVisible: (viewModalVisible: boolean) => void;
   setSearchQuery: (searchQuery: string) => void;
@@ -163,11 +163,11 @@ export const useMapStore = create<MapState>((set, get) => ({
   guestbookEntriesByBoardId: {},
   myActivitiesModalVisible: false,
 
-  loadBoards: async () => {
+  loadBoards: async (coordinate) => {
     set({ isLoadingBoards: true, boardsLoadError: null });
 
     try {
-      const fetchedBoards = await fetchBoardsFromStoreMissions();
+      const fetchedBoards = await fetchBoardsFromStoreMissions(coordinate);
       if (fetchedBoards.length === 0) {
         set({
           isLoadingBoards: false,

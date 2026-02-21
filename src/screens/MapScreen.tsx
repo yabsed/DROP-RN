@@ -43,6 +43,7 @@ export default function MapScreen() {
     setViewModalVisible,
     setSearchQuery,
     setMyActivitiesModalVisible,
+    refreshBoardMissionAttempts,
     handleBackNavigation,
   } = useMapStore();
   const { token } = useAuthStore();
@@ -119,6 +120,11 @@ export default function MapScreen() {
 
     return () => subscription.remove();
   }, [authModalVisible, viewModalVisible, myActivitiesModalVisible, handleBackNavigation]);
+
+  useEffect(() => {
+    if (!viewModalVisible || !selectedBoard || !isAuthenticated) return;
+    void refreshBoardMissionAttempts(selectedBoard);
+  }, [viewModalVisible, selectedBoard, isAuthenticated, refreshBoardMissionAttempts]);
 
   const handleMarkerPress = (board: Board) => {
     setSelectedBoard(board);

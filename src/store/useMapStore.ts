@@ -23,6 +23,7 @@ type MapState = {
   guestbookEntriesByBoardId: Record<string, GuestbookEntry[]>;
   myActivitiesModalVisible: boolean;
   loadBoards: (coordinate?: Coordinate | null) => Promise<void>;
+  refreshBoardMissionAttempts: (board: Board) => Promise<void>;
   setSelectedBoard: (selectedBoard: Board | null) => void;
   setViewModalVisible: (viewModalVisible: boolean) => void;
   setSearchQuery: (searchQuery: string) => void;
@@ -83,24 +84,6 @@ const getCoordinateNearBoardOrAlert = (coordinate: Coordinate | null, board: Boa
     `${board.title}에서 약 ${Math.round(distance)}m 떨어져 있어요. ${MISSION_PROXIMITY_METERS}m 이내에서 다시 시도해주세요.`,
   );
   return null;
-};
-
-const isInQuietTimeRange = (mission: Mission, now: Date): boolean => {
-  if (mission.quietTimeStartHour === undefined || mission.quietTimeEndHour === undefined) return true;
-  if (mission.quietTimeDays && mission.quietTimeDays.length > 0) {
-    const weekdayByIndex = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"] as const;
-    const currentDay = weekdayByIndex[now.getDay()];
-    if (!mission.quietTimeDays.includes(currentDay)) return false;
-  }
-
-  const currentHour = now.getHours() + now.getMinutes() / 60;
-  const { quietTimeStartHour, quietTimeEndHour } = mission;
-
-  if (quietTimeStartHour <= quietTimeEndHour) {
-    return currentHour >= quietTimeStartHour && currentHour < quietTimeEndHour;
-  }
-
-  return currentHour >= quietTimeStartHour || currentHour < quietTimeEndHour;
 };
 
 const hasReward = (rewardId: number | null | undefined): boolean =>
@@ -244,22 +227,19 @@ const buildRepeatVisitProgress = (board: Board, mission: Mission, attempts: Miss
   };
 };
 
-const buildAttemptStateFromBoards = async (
-  boards: Board[],
-  token: string,
-): Promise<{
-  participatedActivities: ParticipatedActivity[];
-  repeatVisitProgressByMissionId: Record<string, RepeatVisitProgress>;
-}> => {
-  const missionRecords = boards.flatMap((board) => board.missions.map((mission) => ({ board, mission })));
-  if (missionRecords.length === 0) {
-    return {
-      participatedActivities: [],
-      repeatVisitProgressByMissionId: {},
-    };
-  }
+type MissionRecord = {
+  board: Board;
+  mission: Mission;
+};
 
-  const attemptRecords = await Promise.all(
+type AttemptRecord = {
+  board: Board;
+  mission: Mission;
+  attempts: MissionAttemptResponse[];
+};
+
+const fetchAttemptRecords = async (missionRecords: MissionRecord[], token: string): Promise<AttemptRecord[]> =>
+  Promise.all(
     missionRecords.map(async ({ board, mission }) => {
       const missionId = toMissionId(mission.id);
       if (missionId === null) {
@@ -275,6 +255,12 @@ const buildAttemptStateFromBoards = async (
     }),
   );
 
+const buildAttemptStateFromAttemptRecords = (
+  attemptRecords: AttemptRecord[],
+): {
+  participatedActivities: ParticipatedActivity[];
+  repeatVisitProgressByMissionId: Record<string, RepeatVisitProgress>;
+} => {
   const participatedActivities: ParticipatedActivity[] = [];
   const repeatVisitProgressByMissionId: Record<string, RepeatVisitProgress> = {};
 
@@ -308,6 +294,25 @@ const buildAttemptStateFromBoards = async (
     participatedActivities: uniqueActivities,
     repeatVisitProgressByMissionId,
   };
+};
+
+const buildAttemptStateFromBoards = async (
+  boards: Board[],
+  token: string,
+): Promise<{
+  participatedActivities: ParticipatedActivity[];
+  repeatVisitProgressByMissionId: Record<string, RepeatVisitProgress>;
+}> => {
+  const missionRecords = boards.flatMap((board) => board.missions.map((mission) => ({ board, mission })));
+  if (missionRecords.length === 0) {
+    return {
+      participatedActivities: [],
+      repeatVisitProgressByMissionId: {},
+    };
+  }
+
+  const attemptRecords = await fetchAttemptRecords(missionRecords, token);
+  return buildAttemptStateFromAttemptRecords(attemptRecords);
 };
 
 const getAttemptFailureMessage = (attempt: MissionAttemptResponse, defaultMessage: string): string => {
@@ -376,6 +381,42 @@ export const useMapStore = create<MapState>((set, get) => ({
     }
   },
 
+  refreshBoardMissionAttempts: async (board) => {
+    const token = getAccessTokenOrAlert();
+    if (!token) return;
+
+    const missionRecords: MissionRecord[] = board.missions.map((mission) => ({ board, mission }));
+    const repeatVisitMissionIds = board.missions
+      .filter((mission) => mission.type === "repeat_visit_stamp")
+      .map((mission) => mission.id);
+
+    const nextAttemptState = missionRecords.length > 0
+      ? buildAttemptStateFromAttemptRecords(await fetchAttemptRecords(missionRecords, token))
+      : {
+          participatedActivities: [] as ParticipatedActivity[],
+          repeatVisitProgressByMissionId: {} as Record<string, RepeatVisitProgress>,
+        };
+
+    set((state) => {
+      const activitiesWithoutBoard = state.participatedActivities.filter((activity) => activity.boardId !== board.id);
+      const mergedActivities = [...activitiesWithoutBoard, ...nextAttemptState.participatedActivities]
+        .sort((a, b) => b.startedAt - a.startedAt);
+
+      const nextRepeatVisitProgressByMissionId = { ...state.repeatVisitProgressByMissionId };
+      for (const missionId of repeatVisitMissionIds) {
+        delete nextRepeatVisitProgressByMissionId[missionId];
+      }
+      for (const [missionId, progress] of Object.entries(nextAttemptState.repeatVisitProgressByMissionId)) {
+        nextRepeatVisitProgressByMissionId[missionId] = progress;
+      }
+
+      return {
+        participatedActivities: mergedActivities,
+        repeatVisitProgressByMissionId: nextRepeatVisitProgressByMissionId,
+      };
+    });
+  },
+
   setSelectedBoard: (selectedBoard) => set({ selectedBoard }),
   setViewModalVisible: (viewModalVisible) => set({ viewModalVisible }),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
@@ -384,11 +425,6 @@ export const useMapStore = create<MapState>((set, get) => ({
   certifyQuietTimeMission: async (board, mission, currentCoordinate) => {
     const coordinate = getCoordinateNearBoardOrAlert(currentCoordinate, board);
     if (!coordinate) return;
-
-    if (!isInQuietTimeRange(mission, new Date())) {
-      Alert.alert("인증 가능 시간 아님", "지금은 한산 시간대가 아니에요. 미션 시간에 다시 시도해주세요.");
-      return;
-    }
 
     const token = getAccessTokenOrAlert();
     if (!token) return;

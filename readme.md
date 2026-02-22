@@ -1,8 +1,18 @@
-﻿## 2026 제3회 와커톤 금상 수상작
+﻿## 2026 제3회 와커톤 금상 수상작 🥇🏆
 
-<img src="./demo/award/image.png" alt="2026 제3회 와커톤 금상 수상" style="display: block; max-width: 720px; width: 100%; height: auto;" />
+팀명: **상금수거반** 💰🧹💰🧹
 
-이 프로젝트는 **2026 제3회 와커톤 금상** 수상작입니다.
+- 📣 와커톤 3회 설명글: https://www.instagram.com/p/DTl7DdpAUro/
+- 🖥️ 서버 레포: https://github.com/yeonseo432/localhost-server
+- 🛠️ 관리자 클라이언트 레포: https://github.com/user983740/localhost_PC
+
+<p align="center">
+  <img src="./demo/award/Wakathon.png" alt="와커톤 3회 대회 설명" style="height: 260px; width: auto; vertical-align: top;" />
+  <img src="./demo/award/Result.png" alt="와커톤 금상 인증샷" style="height: 260px; width: auto; vertical-align: top;" />
+</p>
+
+이 프로젝트는 **2026 제3회 와커톤 금상** 수상작입니다. 
+
 # localhost
 
 <img src="./assets/icon.png" alt="localhost 아이콘" style="display: block; max-width: 96px; width: 100%; height: auto;" />
@@ -193,5 +203,3 @@ npx tsc --noEmit
 
 이 프로젝트는 단순 체크인을 넘어서, 위치·시간·이미지 검증을 결합해  
 오프라인 행동을 신뢰도 있게 인증하는 **LBS 미션 리워드 프런트엔드**입니다.
-
-

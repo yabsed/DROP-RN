@@ -13,15 +13,6 @@
 
 - YouTube: https://www.youtube.com/watch?v=Wtlmh8JPEJo
 
-## 이 저장소의 역할
-
-- 이 저장소의 중심은 **프런트엔드 앱(React Native + Expo)** 입니다.
-- `localhost-server/`에는 백엔드 팀 코드가 포함되어 있습니다.
-- `release/`에는 릴리스 자산(APK, 이미지, 비디오, GIF)이 정리되어 있습니다.
-  - `release/videos_gif/`: README 설명용 핵심 UX 데모 GIF
-  - `release/videos/`: 원본 클립(mp4)
-  - `release/offline.apk`, `release/online.apk`: 배포 APK
-
 ## 프로젝트가 해결하는 문제
 
 일반 체크인형 서비스는 실제 행동 검증이 약합니다.  

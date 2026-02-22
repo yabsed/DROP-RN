@@ -7,24 +7,28 @@
 - 🛠️ 관리자 클라이언트 레포: https://github.com/user983740/localhost_PC
 
 <p align="center">
-  <img src="./demo/award/Wakathon.png" alt="와커톤 3회 대회 설명" style="height: 260px; width: auto; vertical-align: top;" />
-  <img src="./demo/award/Result.png" alt="와커톤 금상 인증샷" style="height: 260px; width: auto; vertical-align: top;" />
+  <img src="./demo/award/Wakathon.png" alt="와커톤 3회 대회 설명" style="display: inline-block; width: 49%; max-width: 560px; height: auto; vertical-align: top;" />
+  <img src="./demo/award/Result.png" alt="와커톤 금상 인증샷" style="display: inline-block; width: 49%; max-width: 560px; height: auto; vertical-align: top;" />
 </p>
 
 이 프로젝트는 **2026 제3회 와커톤 금상** 수상작입니다. 
 
 # localhost
 
-<img src="./assets/icon.png" alt="localhost 아이콘" style="display: block; max-width: 96px; width: 100%; height: auto;" />
+<p align="center">
+  <img src="./assets/icon.png" alt="localhost 아이콘" style="display: block; max-width: 96px; width: 100%; height: auto; margin: 0 auto;" />
+</p>
 
 위치 기반 미션을 수행하고 보상을 획득하는 O2O 리워드 앱의 프런트엔드입니다.  
 사용자는 지도에서 매장을 탐색하고, 매장별 미션(영수증 인증, 보물찾기, 체류 인증, 반복 방문)을 수행해 코인을 얻습니다.
 
 ## Live Demo
 
-<a href="https://youtu.be/Wtlmh8JPEJo">
-  <img src="https://img.youtube.com/vi/Wtlmh8JPEJo/maxresdefault.jpg" alt="Watch the live demo" style="display: block; max-width: 360px; width: 100%; height: auto;" />
-</a>
+<p align="center">
+  <a href="https://youtu.be/Wtlmh8JPEJo">
+    <img src="https://img.youtube.com/vi/Wtlmh8JPEJo/maxresdefault.jpg" alt="Watch the live demo" style="display: block; max-width: 360px; width: 100%; height: auto; margin: 0 auto;" />
+  </a>
+</p>
 
 - YouTube: https://www.youtube.com/watch?v=Wtlmh8JPEJo
 
@@ -41,7 +45,7 @@
 
 ### 1) 지도 탐색과 매장 전환
 
-<p>
+<p align="center">
   <img src="./demo/videos_gif/8_축소.gif" alt="지도 축소/탐색" width="220" />
   <img src="./demo/videos_gif/2_좌우_스와이핑.gif" alt="매장 카드 좌우 스와이프" width="220" />
   <img src="./demo/videos_gif/1_위아래_스크롤링.gif" alt="미션 목록 세로 스크롤" width="220" />
@@ -58,7 +62,9 @@
 
 ### 2) 로그인과 토큰 캐싱
 
-<img src="./demo/videos_gif/3_초기_실행_및_토큰_캐싱.gif" alt="초기 실행 및 토큰 캐싱" width="220" />
+<p align="center">
+  <img src="./demo/videos_gif/3_초기_실행_및_토큰_캐싱.gif" alt="초기 실행 및 토큰 캐싱" width="220" />
+</p>
 
 - 로그인/회원가입 후 토큰을 로컬에 저장해 앱 재실행 시 인증 상태를 유지합니다.
 - 계정 모달에서 현재 로그인 사용자와 역할(USER)을 확인하고 로그아웃할 수 있습니다.
@@ -70,7 +76,7 @@
 
 ### 3) 영수증 구매 인증 (성공/실패)
 
-<p>
+<p align="center">
   <img src="./demo/videos_gif/4_영수증_성공.gif" alt="영수증 인증 성공" width="220" />
   <img src="./demo/videos_gif/5_영수증_실패.gif" alt="영수증 인증 실패" width="220" />
 </p>
@@ -87,7 +93,7 @@
 
 ### 4) 카메라 보물찾기 (성공/실패)
 
-<p>
+<p align="center">
   <img src="./demo/videos_gif/6_보물찾기_성공.gif" alt="보물찾기 인증 성공" width="220" />
   <img src="./demo/videos_gif/7_보물찾기_실패.gif" alt="보물찾기 인증 실패" width="220" />
 </p>

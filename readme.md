@@ -21,6 +21,7 @@
 
 위치 기반 미션을 수행하고 보상을 획득하는 O2O 리워드 앱의 프런트엔드입니다.  
 사용자는 지도에서 매장을 탐색하고, 매장별 미션(영수증 인증, 보물찾기, 체류 인증, 반복 방문)을 수행해 코인을 얻습니다.
+이 프로젝트는 제 인생 첫 React Native 프로젝트였습니다.
 
 ## Live Demo
 
@@ -122,6 +123,22 @@
 
 ### Frontend Stack
 
+<p align="center">
+  <img src="https://img.shields.io/badge/React%20Native-0.81-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React Native 0.81" />
+  <img src="https://img.shields.io/badge/Expo-54-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo 54" />
+  <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+</p>
+<p align="center">
+  <img src="https://img.shields.io/badge/Zustand-State%20Management-4A5568?style=for-the-badge&logoColor=white" alt="Zustand" />
+  <img src="https://img.shields.io/badge/react--native--maps-Map%20UI-34A853?style=for-the-badge&logo=googlemaps&logoColor=white" alt="react-native-maps" />
+  <img src="https://img.shields.io/badge/expo--location-GPS%20Access-000020?style=for-the-badge&logo=expo&logoColor=white" alt="expo-location" />
+</p>
+<p align="center">
+  <img src="https://img.shields.io/badge/expo--image--picker-Camera%20Input-000020?style=for-the-badge&logo=expo&logoColor=white" alt="expo-image-picker" />
+  <img src="https://img.shields.io/badge/expo--image--manipulator-Image%20Compress-000020?style=for-the-badge&logo=expo&logoColor=white" alt="expo-image-manipulator" />
+  <img src="https://img.shields.io/badge/expo--file--system-File%20I%2FO-000020?style=for-the-badge&logo=expo&logoColor=white" alt="expo-file-system" />
+</p>
+
 - React Native 0.81 + Expo 54
 - TypeScript
 - Zustand (인증/지도/미션 상태)
@@ -168,4 +185,3 @@ npm run android
 cd android
 .\gradlew assembleRelease
 ```
-

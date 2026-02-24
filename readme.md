@@ -185,13 +185,8 @@ cd android
 
 ## 마무리
 
-상세 로직 문서:
-- [카메라 보물찾기 로직 완전 해설](./CAMERA_TREASURE_HUNT_LOGIC.md)
-- [mapAttemptToParticipatedActivity 완전 해설](./MAP_ATTEMPT_TO_PARTICIPATED_ACTIVITY_FLOW.md)
-- [스탬프/체류시간 미션 처리 완전 해설](./STAMP_STAY_MISSION_FLOW.md)
-
 사이드 프로젝트:
 
-- 와커톤 개발 과정이 궁금하다면, 커밋 히스토리로 팀 협업 흐름을 시각화한 제 사이드 프로젝트도 함께 봐주세요.
+- 와커톤 개발 과정이 궁금하다면, 커밋 히스토리로 팀 협업 흐름을 시각화한 제 사이드 프로젝트도 함께 구경해 주세요.
 - `localhost-commit-analysis`: https://github.com/yabsed/localhost-commit-analysis
 - 데모: https://yabsed.github.io/localhost-commit-analysis
